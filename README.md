@@ -1,5 +1,8 @@
 ## MADA Project
 
+Last updated 8 October 2021
+* Rmd file "runDataProject_part1" was renamed to "runDataProject_master". Future results and deliverables will be published in this document until the final version is complete.
+
 ### Part 1 - Background and dataset
 
 Part 1 of my MADA project contains five data files - historical data from 2013-2018, individual .csv files for 2019, 2020, and 2021, and my daily resting heart rate. 
@@ -10,7 +13,7 @@ R Markdown file answers questions outlined on MADA website: https://andreashande
 
 Part 2 of my project contains four datasets which come from google sheets - historical data from 2013-2018, my running journal from 2019 - present, the raw data from my Garmin watch, downloaded from the Garmin Connect website, and a dataframe with my resting heart rate (also from Garmin Connect).
 
-This part focuses on cleaning my Google sheets. For the purpose of the project and the safety of my files, I imported all Google sheets using the googlesheets4 package, then saved them as .rds and imported those. After processing, I saved these as .rds files. Throughout the course of this project, I will periodically refresh these files to have the most recent data available. 
+This part focuses on cleaning my Google sheets. For the purpose of the project and the safety of my files, I imported all Google sheets using the googlesheets4 package, then saved them as .rds before cleaning. Throughout the course of this project, I will periodically refresh these files to have the most recent data available. 
 
 In Part 2, I primarily cleaned my data so I was able to coerce it into proper data types. With that said, there are still primarily two features I need to learn to clean more effectively. My average pace variables gave me problems every way I tried to coerce them. Lubridate and hms::as_hms both did not allow me to plot this variable on a continuous scale and made this data inaccessible. Therefore, I used as.POSIXct to use my average pace data immediately. I will need to learn more about time series analysis in order to use my split data more effectively. 
 

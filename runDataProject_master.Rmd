@@ -1,12 +1,12 @@
 ---
-title: "MADA Project Part 1"
+title: "MADA Project"
 author: "Joe Martin"
 date: "9/12/2021"
 output: word_document
 ---
-## Run Data: 2013 - Present
+# Part 1 - Background
 
-#### Question 1
+## Question 1
 
 **Briefly describe what the data is, how it was collected, where you will get (or got) it from. How many observations do you have, what was measured? Anything else important to report about the data?**
 
@@ -33,12 +33,11 @@ pacman::p_load(pacman, rio, tidyverse, lubridate, here)
 # When adding years 2013-2019, change df1 to df20 and make full dataframe out of all years
 
 # 2013 - 2018 Run Data
-data13 <- here::here("data", "run2013-18.csv")
-df1318 <- read_csv(data13, show_col_types=FALSE)
+data13 <- here::here("data", "raw_data","df1318.rds")
+df1318 <- read_rds(data13)
 
 # filter out dates without data
 df1318 <- df1318 %>% filter(total_time != '')
-
 
 ```
 
@@ -50,46 +49,28 @@ summary(df1318)
 head(df1318)
 ```
 
-#### Data Combined 2019 - 2021
-```{r echo=FALSE}
-# combined data for 2019-present
-data19 <- here::here("data", "run2019.csv")
+#### Data from 2021
 
-df19 <- read_csv(data19, show_col_types=FALSE)
-df19$Distance <- as.character(df19$Distance)
-df19$`Elev Loss` <- as.character(df19$`Elev Loss`)
-
-
-data20 <- here::here("data", "run2020.csv")
-
-df20 <- read_csv(data20, show_col_types=FALSE)
-df20$Distance <- as.character(df20$Distance)
-df20$`Elev Loss` <- as.character(df20$`Elev Loss`)
-
-
-data21 <- here::here("data", "run2021.csv")
-
-df21 <- read_csv(data21, show_col_types=FALSE)
-df21$Distance <- as.character(df21$Distance)
-df21$`Elev Loss` <- as.character(df21$`Elev Loss`)
-```
-
+Data from 2019 - 2021 is located in ~/data/raw_data. These sample dataframes are a bit too messy to be useful in this section of the project - primarily because they contain header that are irrelevant. These primarily follow the same format as data from 2013 - 2018. 
 
 ```{r echo=FALSE}
-df1 <- bind_rows(df19,df20,df21)
+data21 <- here::here("data","raw_data", "df2021.rds")
+
+df21 <- read_rds(data21)
 ```
 
+#### Data from Garmin Forerunner 245
 ```{r}
-summary(df1)
+garminRun <- here::here("data","raw_data","garmin20210926.csv")
+garmin <- read_csv(garminRun)
+
+head(garminRun)
 ```
 
-```{r}
-head(df1)
-```
 
 #### Resting Heart Rate 4/15/21 - Present
 ```{r}
-rhr_data <- here::here("data", "dailyRHR.csv")
+rhr_data <- here::here("data","raw_data", "dailyRHR.csv")
 
 rhr <- read_csv(rhr_data)
 ```
@@ -126,3 +107,41 @@ Coaches and personal trainers are expensive to hire. Apps provide users with som
 This is just one example of a measurement which ignores natural variability in training sessions and directly contradicts training programs established over decades by expert coaches and researchers, like Pete Pfitzinger and Jack Daniels, PhD. These expert coaches outline training plans which have a general pattern for long distance races, from 5,000 m races, all the way to marathons. This pattern includes two general aerobic runs per week (about 1:00 per mile slower than race pace), one or two speed sessions (lactate threshold runs at race pace, tempo runs, or track intervals), one or two recovery runs (about 2:00 per mile slower than race pace or heart rate in or below Zone 3), and a long distance run. These programs build in rest days, as well, which athletes are supposed to use for recovery or cross training. 
 
 Aggregate fitness data used by companies like Garmin and Polar is useful developing insights into human performance outcomes for the average person, like in "Human running performance from real-world big data" by Thorsten Emig & Jussi Peltonen. Due to the variability in  quality distance training programs, however, aggregate measures and seemingly random algorithms are not useful in helping individual athletes understand whether they're training well.
+
+
+# Part 2 - Data Cleaning and Exploration
+
+Instructions for reproducing my data cleaning and exploration process are in found in the readme.md file in the data folder. To reproduce code from Part 2 of this project, execute the script "mada_project_part2.R" located in "~code/processing_code". After executing this script, the figures below can be reproduced by executing the script "exploratory_analysis.R" in "~/code/analysis_code".
+
+## Data Cleaning
+
+This stage of my project began with loading my raw data directly from the Google sheets I use with the googlesheets4 package. This is mentioned in the notes of my script, but no longer visible. The googlesheets4 package gives the ability to write to a googlesheet, so I thought it could be risky if I potentially gave that ability to anyone accessing my GitHub. Files for years 2013-2021 were loaded and saved as .rds files before processing. I left a line of code commented out so I'm able to paste in my Google sheet for year 2021 and update data frequently. At this stage, I also imported data from my Garmin Connect account for all of my runs since April 2020, as well as my resting heart rate data.
+
+Over the years, some variables mattered to me and others didn't, so I began cleaning by removing variables that no longer seem to serve a purpose or have a small amount of data during one period of time. 
+
+Once I cleaned out the variables I didn't want, my data files had consistent column structure from 2013-2021. I coerced the data type of variables just enough so I could bind all of this data together.
+
+My plan moving into data analysis is to keep a separate dataframe for my run journal data (2013-present), my Garmin data, and my resting heart rate. When I want to work with variables across each set, I will join them together. 
+
+To complete my data cleaning, I coerced each variable into its necessary type. The most challenging variable has proven to be average pace. This is likely one of the most important variables in my set (if not <em>the</em> most important), so I may need to rethink how I'm using this variable going forward. I ultimately ended by coercing it, as well as best_pace in the Garmin data set, using as.POSIXct. This is not ideal because as.POSIXct also assigns a date value. However, this was good enough to begin analysis. 
+Following processing, clean datasets were saved as rds files in "~/data/processed_data". Notably, I saved two versions of my journal data - one set eliminates NAs for days I didn't run (1,202 observations), one of them retains them(more than 3,000 observations). The purpose of this was to retain notes I kept on days I did not run. 
+
+## Exploratory Analysis
+
+My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and, therefore, could not give me useful information about correlations.
+
+
+The plots below were generated with the "exploratory_analysis.R" script and saved in "~/results/exploratory_results".
+
+### Relationships
+
+#### Resting Heart Rate
+Does my resting heart rate change significantly over time?
+This plot show that my heart rate consistently remains around 47 bpm. There are significant outliers in this data that may skew the results higher. If I don't wear my Garmin watch all day and all night, my resting heart rate can be recorded as 60-70 bpm, which is very unlikely.
+
+In future analyses, it will be interesting to compare this data to variables like weekly training volume, cadence, and average pace.
+```{r rhr}
+
+```
+
+#### Looking at Average Pace
