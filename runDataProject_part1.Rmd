@@ -1,0 +1,128 @@
+---
+title: "MADA Project Part 1"
+author: "Joe Martin"
+date: "9/12/2021"
+output: word_document
+---
+## Run Data: 2013 - Present
+
+#### Question 1
+
+**Briefly describe what the data is, how it was collected, where you will get (or got) it from. How many observations do you have, what was measured? Anything else important to report about the data?**
+
+The data I intend to use for my project is my personal running data. I started distance running in 2012 just before I got my very first smartphone. At the beginning of 2013, I started to track all of my runs in the Nike Run Club app. This was my primary way of tracking my runs. Toward the end of 2014, I started trying various other apps and mostly got the same data out of them. Apps included MapMyRun and Strava, and possibly a few more. Much of my data from 2015 and 2016 is missing and I’m unsure how to, or if I could ever, recover it. In 2017 I mostly used MapMyRun. In 2018, I moved back to  Nike Running and had a full month in 2020 when I used Strava exclusively. In April of 2020, I bought my first smartwatch (a Garmin Forerunner 245), which I’ve been using to track all of my training (running, swimming, and cycling).
+
+I estimate that I have about 1,000 observations for running. In 2020 when we went into lockdown for COVID-19, I began moving all of my data from my various apps and accounts into a Google sheet. I mainly did this manually. I enter my data into another spreadsheet manually for my most recent runs, which I primarily use as my training journal. In this journal, I record imprecise numbers – average pace, mile/lap splits, the shoes I wore, weather, time of day/date, total distance, location of my run, distance type (short, medium, or long), and workout type (recovery, easy, speed, long distance). Along with this, I’ll also take notes about my run, like how I feel, thoughts about how my training is going, whether I’m feeling any pain or note any injuries, etc. With my Garmin watch, I have a Garmin Connect account, which automatically stores my data to the cloud. When I export data related to my activities (running, swimming, and cycling all come together), Garmin gives me a .csv file with 36 variables, although some are empty or have 0 for all values. 
+
+Outside of this data, I also have access to data about my sleep and resting heart rate from my Garmin watch. Sleep data includes how long I slept, how long I spent in light sleep, deep sleep, REM sleep, and my respiration during sleep. Resting heart rate data is included below and shows my resting heart rate for each day. I'm interested in using this data and even reviewing activities outside of running (swimming and cycling) to see if they affect my performance, although I'm also hesitant to start with such a broad scope. 
+
+Going through my data, I have noticed that most of my variables are currently stored as character data. This will be one of the first things I will need to fix to make the most out of my data.
+
+## Question 2
+
+**At this stage you are not required to already have and show the data, but if you do, even better. Then add a few lines of code which load the data and using some of the commands you learned about, provide summary descriptions of the data.**
+
+Data included in this section contains my run logs from 2013 - 2021, as well as my resting heart rate from April 15, 2020 - present. Data I have available for use, but not yet ready to share includes my detailed post-run notes, sleep data, and other random calculations my Garmin watch does for me (VO2 Max, Pulse OX, stress, etc.). I'm leaving these out initially because, while I'm interested in using them, I am also concerned they will greatly broaden the scope and complexity of this project.
+
+#### Historical Data 2013 - 2018
+```{r echo=FALSE}
+# Load Packages
+pacman::p_load(pacman, rio, tidyverse, lubridate, here)
+
+# Load Run Data ############################################
+# When adding years 2013-2019, change df1 to df20 and make full dataframe out of all years
+
+# 2013 - 2018 Run Data
+data13 <- here::here("data", "run2013-18.csv")
+df1318 <- read_csv(data13, show_col_types=FALSE)
+
+# filter out dates without data
+df1318 <- df1318 %>% filter(total_time != '')
+
+
+```
+
+```{r}
+summary(df1318)
+```
+
+```{r}
+head(df1318)
+```
+
+#### Data Combined 2019 - 2021
+```{r echo=FALSE}
+# combined data for 2019-present
+data19 <- here::here("data", "run2019.csv")
+
+df19 <- read_csv(data19, show_col_types=FALSE)
+df19$Distance <- as.character(df19$Distance)
+df19$`Elev Loss` <- as.character(df19$`Elev Loss`)
+
+
+data20 <- here::here("data", "run2020.csv")
+
+df20 <- read_csv(data20, show_col_types=FALSE)
+df20$Distance <- as.character(df20$Distance)
+df20$`Elev Loss` <- as.character(df20$`Elev Loss`)
+
+
+data21 <- here::here("data", "run2021.csv")
+
+df21 <- read_csv(data21, show_col_types=FALSE)
+df21$Distance <- as.character(df21$Distance)
+df21$`Elev Loss` <- as.character(df21$`Elev Loss`)
+```
+
+
+```{r echo=FALSE}
+df1 <- bind_rows(df19,df20,df21)
+```
+
+```{r}
+summary(df1)
+```
+
+```{r}
+head(df1)
+```
+
+#### Resting Heart Rate 4/15/21 - Present
+```{r}
+rhr_data <- here::here("data", "dailyRHR.csv")
+
+rhr <- read_csv(rhr_data)
+```
+
+```{r}
+summary(rhr)
+```
+
+```{r}
+head(rhr)
+```
+## Question 3
+
+**Explain the question you want to answer using the data. What will be your outcome(s) of interest (if any)? What (if any) specific predictors will you focus on? What relations/patterns are you looking for in the data?**
+
+Through this project, I'm interested in understanding how factors of my training program affect my performance. I would like to see if there are any significant relationships between the frequency or intensity of my training and performance. My outcomes of interest would be finding whether there are significant patterns in my pace, active heart rate, or resting heart rate. I'm also interested in seeing if I can measure qualitative outcomes through the notes I take after each run. Some of the patterns I would look for in my data would include the relationship between a positive performance outcome and variables like shoes, number of speed workouts before a race or a long run, or weekly volume (total weekly mileage or time exercising). 
+
+**As much as you know, suggest how you will analyze it. At this stage in the course, we haven’t covered analysis approaches yet, so you can keep things vague and non-technical here.**
+
+In order to search for relationships and patterns in my data, I will first need to identify specific events - like races or long runs - and compare weeks of training against each other. For example, I do one long distance run just about every week. I would be interested in understanding if my pace decreases on a long run if I had more active training days leading up to this run. I would want to see if my heart rate during similar runs (for example, long runs on the same route) decreases over time or increases after a break in training. 
+
+The other way I may go about analyzing patterns in my data would be by picking specific distances described the same way (easy, steady, tempo). For example, a common workout for me would be an up-tempo 10k (6.22 miles) or an easy 8-miler. 
+
+Finally, although I have few races in my data set, I do have a good understanding of my training program, which I follow for weeks in advance of a race. For some races, I have a detailed log of this program. I could measure my fitness ahead of a training program and compare it to my fitness just before or at race time. Measurement of fitness would include average pace, heart rate, and perhaps even ratings based on positive or negative notes taken about training sessions. 
+
+## Question 4
+
+**You are allowed, but not yet required, to provide background information for the question you plan to answer. For instance you can describe why it’s an interesting question, who else has done similar analyses, how your analysis will be new/different, etc. Similar to what you read in an introduction to a research paper. For the final report, you’ll need these parts. For part 1, they are not required, but you are welcome to already scribble down some of that.**
+
+#### Background
+
+Coaches and personal trainers are expensive to hire. Apps provide users with some basic stats about their runs, but users typically have to purchase a subscription to get useful insights into training. Further, apps often use algorithms that do not produce practical insights. For example, Garmin provides users with a Performance Condition measurement. Garmin devices display this measurement to users during a workout to tell them how their performance compares to their average fitness level. Using pace, heart rate, and heart rate variability data, Garmin displays a score from -20 (Poor) to values greater than 10 (Excellent). 
+
+This is just one example of a measurement which ignores natural variability in training sessions and directly contradicts training programs established over decades by expert coaches and researchers, like Pete Pfitzinger and Jack Daniels, PhD. These expert coaches outline training plans which have a general pattern for long distance races, from 5,000 m races, all the way to marathons. This pattern includes two general aerobic runs per week (about 1:00 per mile slower than race pace), one or two speed sessions (lactate threshold runs at race pace, tempo runs, or track intervals), one or two recovery runs (about 2:00 per mile slower than race pace or heart rate in or below Zone 3), and a long distance run. These programs build in rest days, as well, which athletes are supposed to use for recovery or cross training. 
+
+Aggregate fitness data used by companies like Garmin and Polar is useful developing insights into human performance outcomes for the average person, like in "Human running performance from real-world big data" by Thorsten Emig & Jussi Peltonen. Due to the variability in  quality distance training programs, however, aggregate measures and seemingly random algorithms are not useful in helping individual athletes understand whether they're training well.
