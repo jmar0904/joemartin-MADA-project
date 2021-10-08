@@ -108,6 +108,14 @@ This is just one example of a measurement which ignores natural variability in t
 
 Aggregate fitness data used by companies like Garmin and Polar is useful developing insights into human performance outcomes for the average person, like in "Human running performance from real-world big data" by Thorsten Emig & Jussi Peltonen. Due to the variability in  quality distance training programs, however, aggregate measures and seemingly random algorithms are not useful in helping individual athletes understand whether they're training well.
 
+```{r load_packages_data}
+pacman::p_load(pacman, tidyverse, here)
+
+### Load Data ###
+run_df <- read_rds(here::here("data","processed_data","run_data_clean.rds"))
+garminRun <- read_rds(here::here("data","processed_data","garmin_data.rds"))
+rhr <- read_rds(here::here("data","processed_data","resting_heart_rate.rds"))
+```
 
 # Part 2 - Data Cleaning and Exploration
 
@@ -130,18 +138,149 @@ Following processing, clean datasets were saved as rds files in "~/data/processe
 
 My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and, therefore, could not give me useful information about correlations.
 
+I purposely chose variables I anticipated would have significant p-values. I wanted to understand which variables would be most important to my future analysis and modeling, especially if I can introduce new categorical variables, like miles per week and shoes.
 
-The plots below were generated with the "exploratory_analysis.R" script and saved in "~/results/exploratory_results".
+The plots below were generated with the "exploratory_analysis.R" script.
 
 ### Relationships
 
 #### Resting Heart Rate
-Does my resting heart rate change significantly over time?
+
 This plot show that my heart rate consistently remains around 47 bpm. There are significant outliers in this data that may skew the results higher. If I don't wear my Garmin watch all day and all night, my resting heart rate can be recorded as 60-70 bpm, which is very unlikely.
 
 In future analyses, it will be interesting to compare this data to variables like weekly training volume, cadence, and average pace.
 ```{r rhr}
+rhr_plot <- rhr %>% ggplot(aes(x=date, y=`rhr(bpm)`))+
+  geom_line()+
+  geom_smooth(method = "lm")
 
+rhr_plot
 ```
 
-#### Looking at Average Pace
+#### Average Pace
+Average pace is crucial to many of my analyses. Going forward, I will work on finding a better way to coerce this data into a time format that's usable in statistical models.
+
+Over the past 8 years, my overall average pace has decreased, depsite my increas in true recovery runs this year. A recovery run is a very easy run where my heart rate stays in or below Zone 3.
+```{r average_pace_1321}
+average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+average_pace_1321
+```
+
+Over the past 3 years, however, my recovery runs have made my average pace slower.
+```{r average_pace_1821}
+average_pace_1821 <- run_df %>% filter(date >= "2018-01-01") %>%
+  ggplot(aes(x=date,y=avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+average_pace_1821
+```
+
+For a better measure of my performance, I'll look at my longer distance runs - anything over 12 miles. The pace for these runs has decreased over time. 
+```{r ld}
+# Long Disance Runs
+ld <- run_df %>%
+  filter(distance >= 12) %>%
+  filter(date >= "2018-01-01") %>%
+  ggplot(aes(x=date,y=avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ld
+```
+
+Cadence is the measure of how many times a runner's feet hit the ground per minute. A high cadence is typically associated with a faster pace. 
+```{r cad_ap}
+# Effect of Cadence on Average Pace
+cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+cad_ap
+```
+
+Aerobic TE is a measurement Garmin created to rate an aerobic effort. On a scale from 1-5, 5 is a maximum effort. This is good stress for the body, but requires a lot of rest time afterwards. 1 is minimal and typically associated with other types of exercise besides running. This 
+```{r ae_ap}
+# Effect of Harder Aerobic Effort on Average Pace
+ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ae_ap
+```
+
+Average heart rate may be another important variable in my project.
+```{r hr_ap}
+# Average Pace and Average Heart Rate
+hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+hr_ap
+```
+
+Greater stride length seems to be associated with a greater pace. This seems counter-intuitive if thinking about cadence in this equations, but with good form and mechanics, greater cadence is more likely to be associated with greater stride length.
+```{r st_ap}
+# Stride and Average Pace
+st_ap <- garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+st_ap
+```
+
+#### Other important variables
+
+Correlation between cadence and stride
+```{r cadence_stride}
+ca_stride <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_stride))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ca_stride
+```
+
+Living in the Southern US, we have to deal with high temperatures. Marathons typically aren't held in the summer for a reason. Excessive heat is not only known to decrease performance, but can be dangerous. Although it can't be totally avoided, I try not to run when it's too hot out.
+```{r temp_dist}
+# Temperature
+# I'm less likely to run far when it gets hot out. 
+fit1 <- lm(distance ~ temperature, run_df)
+summary(fit1)
+
+temp_dist <- run_df %>% ggplot(aes(x=temperature, y = distance))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+temp_dist
+```
+
+```{r temp_pace}
+temp_pace <- run_df %>% ggplot(aes(x=temperature, y = avg_pace))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+temp_pace
+```
+
+Hill training is crucial for success in any race and research shows that hill intervals can better prepare runners than any other type of training. 
+```{r hr_ascent_plot}
+#avg_hr, total_ascent
+hr_ascent <- lm(avg_hr~total_ascent,garminRun)
+summary(hr_ascent)
+
+hr_ascent_plot <-garminRun %>% ggplot(aes(x=avg_hr, y = total_ascent))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+hr_ascent_plot
+```
+
+```{r ae_ta}
+ae_ta <- garminRun %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+ae_ta
+```

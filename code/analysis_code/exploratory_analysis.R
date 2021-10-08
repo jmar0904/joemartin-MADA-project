@@ -9,7 +9,7 @@ rhr <- read_rds(here::here("data","processed_data","resting_heart_rate.rds"))
 
 #### TEST PLOTS ####
 
-#### Resting Heart Rate ####
+###Resting Heart Rate 
 #I've yet to find a good solution for plotting average pace, which will be important to me. I'll need to work on this.
 
 #Despite some outliers (which occur when I don't wear my watch all day and night), my resting heart rate seems to stay consistently around 47 BPM
@@ -18,9 +18,9 @@ rhr_plot <- rhr %>% ggplot(aes(x=date, y=`rhr(bpm)`))+
   geom_smooth(method = "lm")
 
 rhr_plot
-#############################
 
-#### Average Pace ####
+
+### Average Pace ###
 average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace))+
   geom_point()+
   geom_smooth(method = "lm")
@@ -106,8 +106,21 @@ ca_at <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=aerobic_TE))+
 
 ca_at
 
+stride <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_stride))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+stride
+
+### Save Plots ###
+
+save_data_location <- here::here("data","processed_data","run_data_clean.rds")
+saveRDS(run_df, file = save_data_location) #clean data without NA dates
+
+
 ### End Exploratory Analysis ###
-# Extras 
+
+# Extras - unused plots - left for future reference
 #shoes and average pace
 run_df %>% ggplot(aes(x=date, y=avg_pace))+
   geom_point()+
@@ -133,13 +146,6 @@ run_df %>% filter(run_type != "Recovery") %>%
 garminRun %>% ggplot(aes(x=max_run_cadence, y=avg_pace))+
   geom_point()+
   geom_smooth(method = "lm")
-
-
-
-
-
-
-
 
 garminRun %>% ggplot(aes(x=datetime, y=aerobic_TE))+
   geom_point()+
