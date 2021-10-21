@@ -127,7 +127,7 @@ Following processing, clean datasets were saved as rds files in "~/data/processe
 
 My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and, therefore, could not give me useful information about correlations.
 
-I purposely chose variables I anticipated would have significant p-values. I wanted to understand which variables would be most important to my future analysis and modeling, especially if I can introduce new categorical variables, like miles per week and shoes.
+I purposely chose variables I anticipated would have significant p-values. I wanted to understand which variables would be most important to my future analysis and modeling, especially if I can introduce new variables, like miles per week and shoes.
 
 The plots below were generated with the "exploratory_analysis.R" script.
 
@@ -273,3 +273,20 @@ ae_ta <- garminRun %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
 
 ae_ta
 ```
+
+## Statistical Modeling
+
+In "Human runnign performance from real-world big data," authors Emig and Peltonen create a statistical model based on fields captured by the Polar V800 fitness watch, including measures like <em>p = power, v = velocity, t = time,</em> as well as maximal aerobic power (MAP), VO2 Max, anaerobic endurance. These variables go into their model to predict performance during a marathon. 
+
+Unfortunately, these variables are not accessible to me as a user of the Garmin Forerunner 245, which either has these fields hidden in source code which does predict race time for me, among other performance measures. My aim now is to determine which available variables have the greatest significance to my study. 
+
+Since processing my data for the first time, I found even more measurements I was interested in inspecting on Garmin Connect, the online dashboard which hosts the data from my watch. For some reason, this data is readily available one individual run records, but not included in any csv files I'm allowed to export through the Connect dashboard. Therefore, I created a new script which uses RSelenium to take this data from Garmin Connect. This adds the variables Anaerobic Training Effect (anaerobic_TE), Average Speed, Average Moving Speed, and Maximum Speed. Additionally, I added the variable for estimated sweat loss out of curiosity. 
+
+Being unable to access the precise variables Emig and Peltonen describe, I intend to use similar variables to investigate relationships within my dataset. 
+
+
+
+
+## References
+
+Emig, T., Peltonen, J. Human running performance from real-world big data. Nat Commun 11, 4936 (2020). https://doi.org/10.1038/s41467-020-18737-6

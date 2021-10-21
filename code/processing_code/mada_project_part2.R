@@ -3,7 +3,7 @@ pacman::p_load(pacman, tidyverse, googlesheets4, lubridate, here)
 
 #Load training journals from 2019 - Present
 #Each project checkpoint, I'll use googlesheets4 to refresh my data
-#df2021 <- read_sheet()
+df2021 <- read_sheet("https://docs.google.com/spreadsheets/d/1gCpSQPXSSiGulzSm8OWuuSB3HnSr2JxIrovyFV7kk_A/edit#gid=1931690903", sheet="Run Log 2021")
 
 #load data
 df2021 <- read_rds(here::here("data","raw_data","df2021.rds"))
