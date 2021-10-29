@@ -3,7 +3,7 @@ pacman::p_load(pacman, tidyverse, googlesheets4, lubridate, here)
 
 #Load training journals from 2019 - Present
 #Each project checkpoint, I'll use googlesheets4 to refresh my data
-df2021 <- read_sheet("https://docs.google.com/spreadsheets/d/1gCpSQPXSSiGulzSm8OWuuSB3HnSr2JxIrovyFV7kk_A/edit#gid=1931690903", sheet="Run Log 2021")
+df2021 <- read_sheet("")
 
 #load data
 df2021 <- read_rds(here::here("data","raw_data","df2021.rds"))
@@ -12,7 +12,7 @@ df2019 <- read_rds(here::here("data","raw_data","df2019.rds"))
 df1318 <- read_rds(here::here("data","raw_data","df1318.rds"))
 
 #Load data from Garmin - includes run, cycle, swim, other
-garmin <- read_csv(here::here ("data","raw_data", "garmin20210926.csv"))
+garmin <- read_csv(here::here ("data","raw_data", "garmin20211024.csv"))
 
 #Load Resting heart rate data
 rhr <- read_csv(here::here("data","raw_data","dailyRHR.csv"))
@@ -28,8 +28,8 @@ rhr <- read_csv(here::here("data","raw_data","dailyRHR.csv"))
 # Separate date variable into date and time
 garmin <- separate(garmin, col = "Date", into = c("date","start_time"), sep = " " )
 # Reformat the date so they R can read them as a date, not character
-garmin$date <- mdy(garmin$date)
-garmin$day_time <- lubridate::hm(garmin$start_time)
+garmin$date <- ymd(garmin$date)
+garmin$day_time <- lubridate::hms(garmin$start_time)
 
 # Arrange date from earliest to latest
 garmin <- garmin %>% 
@@ -106,11 +106,11 @@ df2021 <- df2021 %>% rename("weekday" = `Current Personal Records`,
                            "goal" = `Mile`,
                            "workout" = `5:12`,
                            "start_time" = `5k`,
-                           "run_type"= `19:43`,
+                           "run_type"= `18:50`,
                            "distance_type"  = `10k`,
-                           "weather"  = `00:43:08`,
+                           "weather"  = `00:38:39`,
                            "location"  = `Half Marathon`,
-                           "shoes"  = `01:36:29`,
+                           "shoes"  = `01:24:42`,
                            "distance"  = `Marathon`,
                            "total_time"  = `4:07:34`,
                            "avg_pace"  = `...13`,
@@ -269,27 +269,36 @@ df1321$distance <- as.numeric(df1321$distance)
 df1321$total_time <- lubridate::hms(df1321$total_time)
 
 # avg_pace
-## I perviously used hms::as_hms to convert to a specific time. That's no longer working, nor is lubridate
-### my best option at the moment is as.POSIXct()
+# To examine average pace in my models, I will convert it from a MM:SS format to just seconds. For example, 8:02 will be 502
 df1321 <- separate(df1321, col=avg_pace, into=c("min","sec"), sep = ":")
-df1321$min <- as.factor(df1321$min)
 
-df1321$min <- fct_recode(df1321$min, "05" = "5")
-df1321$min <- fct_recode(df1321$min, "06" = "6")
-df1321$min <- fct_recode(df1321$min, "07" = "7")
-df1321$min <- fct_recode(df1321$min, "08" = "8")
-df1321$min <- fct_recode(df1321$min, "09" = "9")
+df1321$min <- as.numeric(df1321$min)
+df1321$sec <- as.numeric(df1321$sec)
 
-df1321$avg_pace <- paste("00:",df1321$min,":",df1321$sec,sep = "")
-df1321 <- df1321 %>% select(-min,-sec)
+df1321$min <- df1321$min * 60
+
+df1321$avg_pace_sec <- df1321$min + df1321$sec
+
+# Deprecated. The Following code was used to convert average pace to HH:MM:SS format. Leaving it in case I need to use it again.
+#df1321$min <- as.factor(df1321$min)
+
+#df1321$min <- fct_recode(df1321$min, "05" = "5")
+#df1321$min <- fct_recode(df1321$min, "06" = "6")
+#df1321$min <- fct_recode(df1321$min, "07" = "7")
+#df1321$min <- fct_recode(df1321$min, "08" = "8")
+#df1321$min <- fct_recode(df1321$min, "09" = "9")
+
+#df1321$avg_pace <- paste("00:",df1321$min,":",df1321$sec,sep = "")
+#df1321 <- df1321 %>% select(-min,-sec)
 
 #run_df$avg_pace <- hms::as_hms(run_df$avg_pace)
 
-df1321$avg_pace <- as.POSIXct(df1321$avg_pace, format = "%H:%M:%S")
+#df1321$avg_pace <- as.POSIXct(df1321$avg_pace, format = "%H:%M:%S")
 
 #run_df$avg_pace <- lubridate::hms(run_df$avg_pace)
 
 # all_data will be important to show run frequency by date. I'm also going to create a dataframe without NAs 
+
 df1321$distance <- as.numeric(df1321$distance)
 
 df1321$week <- isoweek(df1321$date)
@@ -318,34 +327,45 @@ garminRun$aerobic_TE <- as.numeric(garminRun$aerobic_TE)
 garminRun$avg_run_cadence <- as.numeric(garminRun$avg_run_cadence)
 garminRun$max_run_cadence <- as.numeric(garminRun$max_run_cadence)
 
-# fix average pace
+# fix average pace. Following the same format, this will be in seconds, only
 garminRun <- separate(garminRun, col=avg_pace, into=c("avg_min","avg_sec"), sep = ":")
-garminRun$avg_min <- as.factor(garminRun$avg_min)
 
-garminRun$avg_min <- fct_recode(garminRun$avg_min, "05" = "5")
-garminRun$avg_min <- fct_recode(garminRun$avg_min, "06" = "6")
-garminRun$avg_min <- fct_recode(garminRun$avg_min, "07" = "7")
-garminRun$avg_min <- fct_recode(garminRun$avg_min, "08" = "8")
-garminRun$avg_min <- fct_recode(garminRun$avg_min, "09" = "9")
+garminRun$avg_min <- as.numeric(garminRun$avg_min)
+garminRun$avg_sec <- as.numeric(garminRun$avg_sec)
 
-garminRun$avg_pace <- paste("00:",garminRun$avg_min,":",garminRun$avg_sec,sep = "")
+garminRun$avg_pace_sec <- ((garminRun$avg_min * 60) + garminRun$avg_sec)
+
+# Deprecated. Use later if needed 
+#garminRun$avg_min <- as.factor(garminRun$avg_min)
+
+#garminRun$avg_min <- fct_recode(garminRun$avg_min, "05" = "5")
+#garminRun$avg_min <- fct_recode(garminRun$avg_min, "06" = "6")
+#garminRun$avg_min <- fct_recode(garminRun$avg_min, "07" = "7")
+#garminRun$avg_min <- fct_recode(garminRun$avg_min, "08" = "8")
+#garminRun$avg_min <- fct_recode(garminRun$avg_min, "09" = "9")
+
+#garminRun$avg_pace <- paste("00:",garminRun$avg_min,":",garminRun$avg_sec,sep = "")
 
 
-garminRun$avg_pace <- as.POSIXct(garminRun$avg_pace, format = "%H:%M:%S")
+#garminRun$avg_pace <- as.POSIXct(garminRun$avg_pace, format = "%H:%M:%S")
 
 #Best Pace
 garminRun <- separate(garminRun, col=best_pace, into=c("best_min","best_sec"), sep = ":")
-garminRun$min <- as.factor(garminRun$min)
+garminRun$best_min <- as.numeric(garminRun$best_min)
+garminRun$best_sec <- as.numeric(garminRun$best_sec)
 
-garminRun$best_min <- fct_recode(garminRun$best_min, "05" = "5")
-garminRun$best_min <- fct_recode(garminRun$best_min, "06" = "6")
-garminRun$best_min <- fct_recode(garminRun$best_min, "07" = "7")
-garminRun$best_min <- fct_recode(garminRun$best_min, "08" = "8")
-garminRun$best_min <- fct_recode(garminRun$best_min, "09" = "9")
+garminRun$best_pace_sec <- ((garminRun$best_min * 60) + garminRun$best_sec)
 
-garminRun$best_pace <- paste("00:",garminRun$best_min,":",garminRun$best_sec,sep = "")
+# Deprecated. Use later if needed.
+#garminRun$best_min <- fct_recode(garminRun$best_min, "05" = "5")
+#garminRun$best_min <- fct_recode(garminRun$best_min, "06" = "6")
+#garminRun$best_min <- fct_recode(garminRun$best_min, "07" = "7")
+#garminRun$best_min <- fct_recode(garminRun$best_min, "08" = "8")
+#garminRun$best_min <- fct_recode(garminRun$best_min, "09" = "9")
 
-garminRun$best_pace <- as.POSIXct(garminRun$best_pace, format = "%H:%M:%S")
+#garminRun$best_pace <- paste("00:",garminRun$best_min,":",garminRun$best_sec,sep = "")
+
+#garminRun$best_pace <- as.POSIXct(garminRun$best_pace, format = "%H:%M:%S")
 
 
 garminRun$total_ascent <- as.numeric(garminRun$total_ascent)
@@ -355,9 +375,9 @@ garminRun$min_elevation <- as.numeric(garminRun$min_elevation)
 garminRun$max_elevation <- as.numeric(garminRun$max_elevation)
 
 garminRun$datetime <- paste(garminRun$date,garminRun$start_time, sep = " ")
-garminRun$datetime <- ymd_hm(garminRun$datetime)
+garminRun$datetime <- ymd_hms(garminRun$datetime)
 
-garminRun$week <- isoweek(garminRun$datetime)
+garminRun$week <- isoweek(garminRun$date)
 ### Save Data Files as RDS ###
 # location to save file
 
@@ -372,3 +392,64 @@ saveRDS(df1321, file = save_data_location) #clean data with NA dates. Keeping to
 
 save_data_location <- here::here("data","processed_data","resting_heart_rate.rds")
 saveRDS(rhr, file = save_data_location) 
+
+### Added Data ###
+# After scraping Garmin Connect, I was able to obtain data that is unavailable in my Garmin Connect exports. 
+# I did minimal processing in that script (named garminConnectScrape.R) to add dates to the main data. 
+# The code below processes the resulting csv files and adds them to garmin_data.rds
+
+garmin_c_scrape <- read_csv(here::here("data","raw_data","garminScrapedf.csv"))
+
+
+# Select only variables that are necessary to add
+
+# There are a few more items I need to update in order to complete this new dataset
+# remove units from values (calories burned, sweat loss, speed)
+# split anaerobic and aerobic values into numeric value and factor value
+
+# Remove labels
+df_gs <- garmin_c_scrape %>% select(date,distance,calories_burned,`sweat_loss(ml)`,aerobic,anaerobic,avg_spd,avg_moving_spd,max_spd)
+df_gs$distance <- as.numeric(gsub(" mi","",df_gs$distance))
+
+df_gs$calories_burned <- str_remove(df_gs$calories_burned, " C")
+df_gs$calories_burned <- as.numeric(str_remove(df_gs$calories_burned, ","))
+
+df_gs$`sweat_loss(ml)` <- as.numeric(str_remove(df_gs$`sweat_loss(ml)`, " ml"))
+
+df_gs$avg_spd <- as.numeric(str_remove(df_gs$avg_spd, " mph"))
+df_gs$avg_moving_spd <- as.numeric(str_remove(df_gs$avg_moving_spd, " mph"))
+df_gs$max_spd <- as.numeric(str_remove(df_gs$max_spd, " mph"))
+
+# split numeric values from text values
+df_gs <- separate(df_gs, col = "aerobic", into = c("aerobic_value", "aerobic_fct"), sep = " ", extra = "merge")
+df_gs <- separate(df_gs, col = "anaerobic", into = c("anaerobic_value", "anaerobic_fct"), sep = " ", extra = "merge")
+df_gs$aerobic_value <- as.numeric(df_gs$aerobic_value)
+df_gs$anaerobic_value <- as.numeric(df_gs$anaerobic_value)
+
+#create unique id variable to join scrape records with watch records. 
+#Date and Distance should be sufficient
+
+garminRun$id <- paste(garminRun$date,garminRun$distance,sep="-")
+df_gs$id <- paste(df_gs$date,df_gs$distance,sep="-")
+
+#Remove variables that will become duplicated
+df_gs <- df_gs %>% select(-date,-distance)
+
+garminRun1 <- left_join(garminRun,df_gs, by = "id")
+
+#delete other useless variables
+garminRun1 <- garminRun1 %>% select(-activity_type, -title, -id)
+
+pacman::p_load(fastDummies)
+
+# Create variables with binary data. 0 is alway "absent" or "no", 1 is always "present" or "yes".
+garminRun_bin <- garminRun1 %>% select(distance,calories,avg_hr,max_hr,avg_run_cadence,
+                                       max_run_cadence,total_ascent,total_decent,avg_stride,min_elevation,
+                                       max_elevation,avg_pace_sec,best_pace_sec,week,`sweat_loss(ml)`,
+                                       aerobic_value,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)
+
+garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "aerobic_fct")
+garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "anaerobic_fct")
+
+#save checkpoint
+write_rds(garminRun_bin, here::here("data","processed_data","garmin_data.rds"))
