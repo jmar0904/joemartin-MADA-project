@@ -3,9 +3,9 @@ pacman::p_load(pacman, tidyverse, googlesheets4, lubridate, here)
 
 #Load training journals from 2019 - Present
 #Each project checkpoint, I'll use googlesheets4 to refresh my data
-df2021 <- read_sheet("")
+#df2021 <- read_sheet()
 
-#load data
+#load data - last refreshed on 10/28/2021
 df2021 <- read_rds(here::here("data","raw_data","df2021.rds"))
 df2020 <- read_rds(here::here("data","raw_data","df2020.rds"))
 df2019 <- read_rds(here::here("data","raw_data","df2019.rds"))
@@ -307,7 +307,7 @@ df1321$week <- isoweek(df1321$date)
 #all_data <- left_join(df1321,garminRun, by = "date")
 
 # New dataframe has no NAs###
-run_df <- df1321 %>% drop_na(shoes)
+run_df <- df1321 %>% drop_na(start_time)
 
 #Don't forget resting heartrate! I'll coerce the data into the correct type and leave it alone until I need to join it
 rhr$date <- mdy(rhr$date)
@@ -438,18 +438,34 @@ df_gs <- df_gs %>% select(-date,-distance)
 garminRun1 <- left_join(garminRun,df_gs, by = "id")
 
 #delete other useless variables
-garminRun1 <- garminRun1 %>% select(-activity_type, -title, -id)
+garminRun1 <- garminRun1 %>% select(-activity_type, -title)
 
 pacman::p_load(fastDummies)
 
 # Create variables with binary data. 0 is alway "absent" or "no", 1 is always "present" or "yes".
-garminRun_bin <- garminRun1 %>% select(distance,calories,avg_hr,max_hr,avg_run_cadence,
+garminRun_bin <- garminRun1 %>% select(id, distance,calories,avg_hr,max_hr,avg_run_cadence,
                                        max_run_cadence,total_ascent,total_decent,avg_stride,min_elevation,
                                        max_elevation,avg_pace_sec,best_pace_sec,week,`sweat_loss(ml)`,
-                                       aerobic_value,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)
+                                       aerobic_TE,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)
 
 garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "aerobic_fct")
 garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "anaerobic_fct")
 
+
+# There are two more variables I want to add from my previous run journal
+# Temperature and distance type
+# Add temperature
+run_df$id <- paste(run_df$date,run_df$distance,sep="-")
+join_run <- run_df %>% select(id,temperature) 
+
+garminRun_next <- left_join(garminRun_bin,join_run, by = "id") %>% select(-id)
+
+#create variable for run distance type. Below 6.22 miles is short distance, up to 12 is middle distance, above is long distance
+#use a few extra decimals to account for extra .01 miles at the end of a run
+#create these directly as binary variables
+garminRun_next$short_distance <- ifelse(garminRun_next$distance < 6.25, 1,0)
+garminRun_next$middle_distance <- ifelse(garminRun_next$distance > 6.25 & garminRun_next$distance < 12.05,1,0)
+garminRun_next$long_distance <- ifelse(garminRun_next$distance > 12.05,1,0)
+
 #save checkpoint
-write_rds(garminRun_bin, here::here("data","processed_data","garmin_data.rds"))
+write_rds(garminRun_next, here::here("data","processed_data","garmin_data.rds"))

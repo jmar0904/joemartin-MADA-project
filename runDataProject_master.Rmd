@@ -151,7 +151,7 @@ Average pace is crucial to many of my analyses. Going forward, I will work on fi
 
 Over the past 8 years, my overall average pace has decreased, depsite my increas in true recovery runs this year. A recovery run is a very easy run where my heart rate stays in or below Zone 3.
 ```{r average_pace_1321}
-average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace))+
+average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 average_pace_1321
@@ -160,7 +160,7 @@ average_pace_1321
 Over the past 3 years, however, my recovery runs have made my average pace slower.
 ```{r average_pace_1821}
 average_pace_1821 <- run_df %>% filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
+  ggplot(aes(x=date,y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -173,7 +173,7 @@ For a better measure of my performance, I'll look at my longer distance runs - a
 ld <- run_df %>%
   filter(distance >= 12) %>%
   filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
+  ggplot(aes(x=date,y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -183,7 +183,7 @@ ld
 Cadence is the measure of how many times a runner's feet hit the ground per minute. A high cadence is typically associated with a faster pace. 
 ```{r cad_ap}
 # Effect of Cadence on Average Pace
-cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace))+
+cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -193,7 +193,7 @@ cad_ap
 Aerobic TE is a measurement Garmin created to rate an aerobic effort. On a scale from 1-5, 5 is a maximum effort. This is good stress for the body, but requires a lot of rest time afterwards. 1 is minimal and typically associated with other types of exercise besides running. This 
 ```{r ae_ap}
 # Effect of Harder Aerobic Effort on Average Pace
-ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace))+
+ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -203,7 +203,7 @@ ae_ap
 Average heart rate may be another important variable in my project.
 ```{r hr_ap}
 # Average Pace and Average Heart Rate
-hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace))+
+hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -213,7 +213,7 @@ hr_ap
 Greater stride length seems to be associated with a greater pace. This seems counter-intuitive if thinking about cadence in this equations, but with good form and mechanics, greater cadence is more likely to be associated with greater stride length.
 ```{r st_ap}
 # Stride and Average Pace
-st_ap <- garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace))+
+st_ap <- garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -246,7 +246,7 @@ temp_dist
 ```
 
 ```{r temp_pace}
-temp_pace <- run_df %>% ggplot(aes(x=temperature, y = avg_pace))+
+temp_pace <- run_df %>% ggplot(aes(x=temperature, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
