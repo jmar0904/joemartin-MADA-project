@@ -448,24 +448,17 @@ garminRun_bin <- garminRun1 %>% select(id, distance,calories,avg_hr,max_hr,avg_r
                                        max_elevation,avg_pace_sec,best_pace_sec,week,`sweat_loss(ml)`,
                                        aerobic_TE,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)
 
-garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "aerobic_fct")
-garminRun_bin <- garminRun_bin %>% dummy_cols(., select_columns = "anaerobic_fct")
-
-
-# There are two more variables I want to add from my previous run journal
-# Temperature and distance type
-# Add temperature
-run_df$id <- paste(run_df$date,run_df$distance,sep="-")
-join_run <- run_df %>% select(id,temperature) 
-
-garminRun_next <- left_join(garminRun_bin,join_run, by = "id") %>% select(-id)
+garminRun_bin$aerobic_fct <- as.factor(garminRun_bin$aerobic_fct)
+garminRun_bin$anaerobic_fct <- as.factor(garminRun_bin$anaerobic_fct)
 
 #create variable for run distance type. Below 6.22 miles is short distance, up to 12 is middle distance, above is long distance
 #use a few extra decimals to account for extra .01 miles at the end of a run
 #create these directly as binary variables
-garminRun_next$short_distance <- ifelse(garminRun_next$distance < 6.25, 1,0)
-garminRun_next$middle_distance <- ifelse(garminRun_next$distance > 6.25 & garminRun_next$distance < 12.05,1,0)
-garminRun_next$long_distance <- ifelse(garminRun_next$distance > 12.05,1,0)
+garminRun_bin$short_distance <- as.factor(ifelse(garminRun_bin$distance < 6.25, "Y","N"))
+garminRun_bin$middle_distance <- as.factor(ifelse(garminRun_bin$distance > 6.25 & garminRun_bin$distance < 12.05, "Y","N"))
+garminRun_bin$long_distance <- as.factor(ifelse(garminRun_bin$distance > 12.05, "Y","N"))
+
+
 
 #save checkpoint
-write_rds(garminRun_next, here::here("data","processed_data","garmin_data.rds"))
+write_rds(garminRun_bin, here::here("data","processed_data","garmin_data.rds"))

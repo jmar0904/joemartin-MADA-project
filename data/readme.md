@@ -1,19 +1,26 @@
-The folders inside this folder should contain all data at various stages.
+## data folder
 
-You should place the raw data in the raw_data folder and do not edit it. Ever!
+### Raw Data
 
-Ideally, load the raw data into R and do all changes there with code, so everything is automatically reproducible and documented.
+#### Run Journals
+These four files were imported from Google Sheets and saved as rds files. df2021.rds is updated at each project checkpoint to provide current data. 
 
-Sometimes, you need to edit the files in the format you got. For instance, Excel files are sometimes so poorly formatted that it's close to impossible to read them into R, or the persons you got the data from used color to code some information, which of course won't import into R. In those cases, you might have to make modifications in a software other than R. 
+#### Garmin Data
 
-If you need to make edits in whatever format you got the data (e.g. Excel), make a copy and place those copies in a separate folder, AND ONLY EDIT THOSE COPIES. 
+dailyRHR.csv is resting heartrate data from Garmin Connect 
 
-Also, write down somewhere the edits you made. 
+garmin20211024.csv is the latest data export from the Garmin Connect activity logs. 
 
-Add as many sub-folders as suitable. If you only have a single processing step, one sub-folder for processed data is enough. If you have multiple stages of cleaning and processing, additional sub-folders might be useful. Adjust based on the complexity of your project.
+garminScrape1.csv and garminScrape1dates.csv are preliminary results from the Garmin Connect website scrape, which brougth in extra varaibles like anaerobic training effect and speed in miles per hour. They are not currently used in any scripts and were saved here as a back-up.
 
-I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. This preserves coding like factors, characters, numeric, etc. If you save as CSV, that information would get lost.
+garminScrape1dates-final.csv and garminScrape-final.csv are the final raw results of the Garmin Connect website scrape. 
 
-See here for some suggestions on how to store your processed data:
+garmingScrapedf.csv is the result of the previous two files being joined and cleaned for better use. 
 
-http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
+### Processed Data
+
+garmin_data.rds now consists of data joined from the Garmin Connect export and Garmin Connect website scrape in the processing script (mada_project_part2.R). This data source will be the primary source for this project and perhaps the only source moving forward.
+
+resting_heart_rate.rds consists of date and resting heart rate in beats per minute. Exported from Garmin Connect. 
+
+run_data_complete.rds contains every date from Jan 1, 2013 through Dec 31, 2021 with NA values where there was no activity. run_data_clean.rds is the same data without the NA values.

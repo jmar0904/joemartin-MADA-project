@@ -1,0 +1,248 @@
+---
+title: "Modeling Run Performance"
+author: "Joe Martin"
+date: "10/27/2021"
+output: pdf_document
+---
+## Garmin Data Modeling
+
+```{r echo=FALSE}
+# Load packages and data
+pacman::p_load(tidyverse, tidymodels, here)
+
+garmin <- read_rds(here::here("data","processed_data", "garmin_data.rds"))
+
+# Transform data to have only the necessary variables
+df <- garmin %>% select(-id,-week, -calories)
+```
+
+The two most obvious primary target variables are average speed (avg_spd) in miles per hour, and average pace (avg_pace_sec) in seconds. A higher average speed and a lower average pace are the desired outcome when measuring performance over time. Reviewing the results of the two preliminary linear regression models, the more desirable variable is average pace, as it has stronger relationships with other variables. 
+
+```{r}
+# Create preliminary model
+
+prelim_spd <- lm(avg_spd ~ ., df)
+summary(prelim_spd)
+
+```
+
+```{r}
+prelim_pace <- lm(avg_pace_sec ~ ., df)
+summary(prelim_pace)
+
+```
+
+The ultimate goal of this model is to utilize data leading up to a performance event. As many races take place on Sunday and the typical long-distance run in this data set takes place on Sunday, the final linear regression model will begin with predicting Sunday performance.
+
+To being predicting run performance, an initial linear regression model will be built below using all available data. Based on the preliminary linear regression above, an aerobic training effect that has a high impact (value between 4 and 4.9) is strongly related to average pace. This variable will be the target variable in the logistic regression that follows. 
+
+```{r}
+set.seed(456)
+# Split data into training and testing sets
+df_split <- initial_split(df, prop = 3/4)
+
+train_df <- training(df_split)
+test_df <- testing(df_split)
+
+# Create recipe
+pace_rec <- recipe(avg_pace_sec ~ ., data = train_df)
+
+summary(pace_rec)
+```
+
+```{r}
+lm_pace <- linear_reg() %>%
+  set_engine("lm")
+
+pace_wflow <- workflow()%>%
+  add_model(lm_pace) %>%
+  add_recipe(pace_rec)
+
+pace_fit <- pace_wflow %>% 
+  fit(data = train_df) 
+
+tidy(pace_fit)
+```
+
+```{r}
+predict(pace_fit, test_df)
+```
+
+```{r}
+pace_aug <- augment(pace_fit, test_df)
+
+pace_aug %>% select(avg_pace_sec, .pred)
+```
+
+The R Mean-Squared Error for this model is 5.41. In other words, this model can predict average pace within 5.41 seconds.
+
+```{r}
+pace_error <- pace_aug %>% 
+  rmse(truth = avg_pace_sec, .pred)
+
+pace_error
+```
+
+The most significant variables (based on p-value) are average heart rate, average cadence, average stride, and aerobic training effect. The binary variable aerobic_fct_Impacting had a good p-value, as well, but that value is related to aerobic training effect, so it is left out of this analysis. As an attempt to improve the quality of the model, only the variables with the highest p-values will be included in this analysis.
+```{r}
+set.seed(456)
+# Split data into training and testing sets
+df_split <- initial_split(df, prop = 3/4)
+
+train_df <- training(df_split)
+test_df <- testing(df_split)
+
+# Create recipe
+pace_rec_2 <- recipe(avg_pace_sec ~ avg_hr + avg_run_cadence + avg_stride + aerobic_TE, data = train_df)
+
+summary(pace_rec_2)
+```
+
+```{r}
+lreg <- linear_reg() %>%
+  set_engine("lm")
+
+pace_wflow_2 <- workflow()%>%
+  add_model(lreg) %>%
+  add_recipe(pace_rec_2)
+
+pace_fit_2 <- pace_wflow_2 %>% 
+  fit(data = train_df) 
+
+tidy(pace_fit_2)
+```
+
+```{r}
+predict(pace_fit_2, test_df)
+```
+
+```{r}
+pace_aug_2 <- augment(pace_fit_2, test_df)
+
+pace_aug_2 %>% select(avg_pace_sec, .pred)
+```
+
+Reviewing the results, the quality of the model decreased slightly. However, it seems that average pace will be a good target variable in exploring performance improvements. 
+
+```{r}
+pace_error_2 <- pace_aug_2 %>% 
+  rmse(truth = avg_pace_sec, .pred)
+
+pace_error_2
+```
+
+
+## Logistic Regression
+
+### All Variables
+
+This first logistic regression is meant to predict whether an activity highly impacts aerobic training. This variable is relevant because it is the highest measure for aerobic conditioning without being over-reaching. In this analysis, calories and other variables related to aerobic training effect were removed. 
+```{r}
+set.seed(456)
+
+df2 <- df %>% mutate(high_impact = ifelse(aerobic_fct == "Highly Impacting", 1,0))
+df2$high_impact <- factor(df2$high_impact)
+
+# Split data into training and testing sets
+df2_split <- initial_split(df2, prop = 3/4)
+
+train_df2 <- training(df2_split)
+test_df2 <- testing(df2_split)
+
+# Create recipe. Use all variables except aerobic_TE and related
+aerobic_rec <- recipe(high_impact ~ short_distance + middle_distance + long_distance + 
+                        max_spd + avg_spd + anaerobic_value + `sweat_loss(ml)` + best_pace_sec +
+                        avg_pace_sec + max_elevation + min_elevation + avg_stride +
+                        total_decent + total_ascent + max_run_cadence + avg_run_cadence + 
+                        max_hr + avg_hr + distance, data = train_df2)
+
+summary(aerobic_rec)
+```
+
+```{r}
+log_reg <- logistic_reg() %>%
+  set_engine("glm")
+
+aero_wkfl <- workflow()%>%
+  add_model(log_reg) %>%
+  add_recipe(aerobic_rec)
+
+aero_fit <- aero_wkfl %>% 
+  fit(data = train_df2) 
+
+tidy(aero_fit)
+```
+
+```{r}
+predict(aero_fit, test_df2)
+```
+
+```{r}
+aero_aug <- augment(aero_fit, test_df2)
+
+aero_aug %>% select(high_impact, .pred_class)
+```
+
+```{r}
+aero_aug$.pred_class <- as.character(aero_aug$.pred_class)
+aero_aug$.pred_class <- as.numeric(aero_aug$.pred_class)
+
+aero_aug %>% 
+  roc_curve(truth = high_impact, .pred_class, event_level="second") %>%
+  autoplot()
+```
+
+```{r}
+aero_aug %>% 
+  roc_auc(truth = high_impact, .pred_class, event_level="second")
+```
+
+The first logistic regression is a good predictive model. The next step is to select fewer variables to see those increase the reliability of the model. 
+
+```{r}
+# Create recipe. Use all variables except aerobic_TE and related
+aerobic_rec2 <- recipe(high_impact ~ middle_distance + avg_spd + min_elevation + avg_stride +
+                       avg_run_cadence + avg_hr, data = train_df2)
+
+summary(aerobic_rec2)
+```
+
+```{r}
+log_reg <- logistic_reg() %>%
+  set_engine("glm")
+
+aero_wkfl2 <- workflow()%>%
+  add_model(log_reg) %>%
+  add_recipe(aerobic_rec2)
+
+aero_fit2 <- aero_wkfl2 %>% 
+  fit(data = train_df2) 
+
+tidy(aero_fit2)
+```
+
+```{r}
+predict(aero_fit2, test_df2)
+```
+
+```{r}
+aero_aug2 <- augment(aero_fit2, test_df2)
+
+aero_aug2 %>% select(high_impact, .pred_class)
+```
+
+```{r}
+aero_aug2$.pred_class <- as.character(aero_aug2$.pred_class)
+aero_aug2$.pred_class <- as.numeric(aero_aug2$.pred_class)
+
+aero_aug2 %>% 
+  roc_curve(truth = high_impact, .pred_class, event_level = "second") %>%
+  autoplot()
+```
+
+```{r}
+aero_aug2 %>% 
+  roc_auc(truth = high_impact, .pred_class, event_level = "second")
+```
+
+Both of these models are acceptable for predicting whether a run highly impacts performance. These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to predict when good performance will happen given a series of events. 

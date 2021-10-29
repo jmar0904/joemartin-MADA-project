@@ -20,3 +20,17 @@ In Part 2, I primarily cleaned my data so I was able to coerce it into proper da
 The main takeaway from this part of my project is that I have several variables that seem have strong correlations. The most immediately useful correlations to me are in stride and average pace, as well as cadence and average pace. 
 
 
+### Part 3 - Preliminary Data Analysis
+
+Part 3 of this project focuses primarily on the data set exported and scraped from Garmin Connect. Part 2 of this project was updated to add new variables (speed in mph, anaerobic training effect, and associate binary variables) to aid in building linear regression and logistic regression models. 
+
+The Rmd file "Modeling Running Performance" contains preliminary modeling results from the available Garmin data. The most relevant results from this document were added to the runDataProject_master.Rmd file. 
+
+The data analysis in Part 3 focuses primarily on identifying the most relevant variables to this study. The objective is to gain a better understanding of the full data set, while setting up for the next part of the project in which these models will be refined to predict performance events. 
+
+Structure Update:
+
+products ->
+runDataProject_master.Rmd
+Modeling Running Performance.Rmd
+

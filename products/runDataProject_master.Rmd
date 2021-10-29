@@ -57,7 +57,7 @@ df21 <- read_rds(data21)
 
 #### Data from Garmin Forerunner 245
 ```{r}
-garminRun <- here::here("data","raw_data","garmin20210926.csv")
+garminRun <- here::here("data","raw_data","garmin20211024.csv")
 garmin <- read_csv(garminRun)
 
 head(garminRun)
@@ -276,16 +276,202 @@ ae_ta
 
 ## Statistical Modeling
 
+### Adding New Variables
 In "Human runnign performance from real-world big data," authors Emig and Peltonen create a statistical model based on fields captured by the Polar V800 fitness watch, including measures like <em>p = power, v = velocity, t = time,</em> as well as maximal aerobic power (MAP), VO2 Max, anaerobic endurance. These variables go into their model to predict performance during a marathon. 
 
-Unfortunately, these variables are not accessible to me as a user of the Garmin Forerunner 245, which either has these fields hidden in source code which does predict race time for me, among other performance measures. My aim now is to determine which available variables have the greatest significance to my study. 
-
-Since processing my data for the first time, I found even more measurements I was interested in inspecting on Garmin Connect, the online dashboard which hosts the data from my watch. For some reason, this data is readily available one individual run records, but not included in any csv files I'm allowed to export through the Connect dashboard. Therefore, I created a new script which uses RSelenium to take this data from Garmin Connect. This adds the variables Anaerobic Training Effect (anaerobic_TE), Average Speed, Average Moving Speed, and Maximum Speed. Additionally, I added the variable for estimated sweat loss out of curiosity. 
+Since processing my data for the first time, I found even more measurements I was interested in inspecting on Garmin Connect, the online dashboard which hosts the data from my watch. For some reason, this data is readily available on individual run records in the website dashboard, but not included in any csv files I'm allowed to export. Therefore, I created a new script which uses RSelenium to take this data from Garmin Connect. This adds the variables Anaerobic Training Effect (anaerobic_value), Average Speed (avg_spd), Average Moving Speed(avg_moving_spd), and Maximum Speed (max_spd). Additionally, I added the variable for estimated sweat loss out of curiosity. 
 
 Being unable to access the precise variables Emig and Peltonen describe, I intend to use similar variables to investigate relationships within my dataset. 
 
+### Trying models
+Since I'm trying to predict performance, I wanted to see which variables would be best for doing so. I started by seeing if it is possible to use a linear regression to predict pace. In my analysis, the best model I was able to create used all variables and predicted average pace within 5.4 seconds. 
 
 
+#### Linear Regression
+
+```{r echo=FALSE}
+# Load packages and data
+pacman::p_load(tidyverse, tidymodels, here)
+
+garmin <- read_rds(here::here("data","processed_data", "garmin_data.rds"))
+
+# Transform data to have only the necessary variables
+df <- garmin %>% select(-id,-week, -calories)
+```
+
+```{r}
+prelim_pace <- lm(avg_pace_sec ~ ., df)
+summary(prelim_pace)
+
+```
+
+To begin predicting run performance, an initial linear regression model will be built below using all available data. Based on the preliminary linear regression above, an aerobic training effect that has a high impact (value between 4 and 4.9) is strongly related to average pace. This variable will be the target variable in the logistic regression that follows. 
+
+```{r}
+set.seed(456)
+# Split data into training and testing sets
+df_split <- initial_split(df, prop = 3/4)
+
+train_df <- training(df_split)
+test_df <- testing(df_split)
+
+# Create recipe
+pace_rec <- recipe(avg_pace_sec ~ ., data = train_df)
+
+summary(pace_rec)
+```
+
+```{r}
+lm_pace <- linear_reg() %>%
+  set_engine("lm")
+
+pace_wflow <- workflow()%>%
+  add_model(lm_pace) %>%
+  add_recipe(pace_rec)
+
+pace_fit <- pace_wflow %>% 
+  fit(data = train_df) 
+
+tidy(pace_fit)
+```
+
+```{r}
+predict(pace_fit, test_df)
+```
+
+```{r}
+pace_aug <- augment(pace_fit, test_df)
+
+pace_aug %>% select(avg_pace_sec, .pred)
+```
+
+The R Mean-Squared Error for this model is 5.41. In other words, this model can predict average pace within 5.41 seconds.
+
+```{r}
+pace_error <- pace_aug %>% 
+  rmse(truth = avg_pace_sec, .pred)
+
+pace_error
+```
+
+## Logistic Regression
+
+Working with this data, I hypothesized that aerobic training effects that had a high impact (value of 4.0 - 4.9) would be a good target variable for a predictive model. The logistic regression models were both successful with ROC_AUC values greater than .7. 
+
+
+
+#### All Variables
+
+This first logistic regression is meant to predict whether an activity highly impacts aerobic training. This variable is relevant because it is the highest measure for aerobic conditioning without being over-reaching. In this analysis, calories and other variables related to aerobic training effect were removed. 
+```{r}
+set.seed(456)
+
+df2 <- df %>% mutate(high_impact = ifelse(aerobic_fct == "Highly Impacting", 1,0))
+df2$high_impact <- factor(df2$high_impact)
+
+# Split data into training and testing sets
+df2_split <- initial_split(df2, prop = 3/4)
+
+train_df2 <- training(df2_split)
+test_df2 <- testing(df2_split)
+
+# Create recipe. Use all variables except aerobic_TE and related
+aerobic_rec <- recipe(high_impact ~ short_distance + middle_distance + long_distance + 
+                        max_spd + avg_spd + anaerobic_value + `sweat_loss(ml)` + best_pace_sec +
+                        avg_pace_sec + max_elevation + min_elevation + avg_stride +
+                        total_decent + total_ascent + max_run_cadence + avg_run_cadence + 
+                        max_hr + avg_hr + distance, data = train_df2)
+
+summary(aerobic_rec)
+```
+
+```{r}
+log_reg <- logistic_reg() %>%
+  set_engine("glm")
+
+aero_wkfl <- workflow()%>%
+  add_model(log_reg) %>%
+  add_recipe(aerobic_rec)
+
+aero_fit <- aero_wkfl %>% 
+  fit(data = train_df2) 
+
+tidy(aero_fit)
+```
+
+```{r}
+predict(aero_fit, test_df2)
+```
+
+```{r}
+aero_aug <- augment(aero_fit, test_df2)
+
+aero_aug %>% select(high_impact, .pred_class)
+```
+
+```{r}
+aero_aug$.pred_class <- as.character(aero_aug$.pred_class)
+aero_aug$.pred_class <- as.numeric(aero_aug$.pred_class)
+
+aero_aug %>% 
+  roc_curve(truth = high_impact, .pred_class, event_level="second") %>%
+  autoplot()
+```
+
+```{r}
+aero_aug %>% 
+  roc_auc(truth = high_impact, .pred_class, event_level="second")
+```
+
+#### Most significant variables
+
+```{r}
+# Create recipe. Use all variables except aerobic_TE and related
+aerobic_rec2 <- recipe(high_impact ~ middle_distance + avg_spd + min_elevation + avg_stride +
+                       avg_run_cadence + avg_hr, data = train_df2)
+
+summary(aerobic_rec2)
+```
+
+```{r}
+log_reg <- logistic_reg() %>%
+  set_engine("glm")
+
+aero_wkfl2 <- workflow()%>%
+  add_model(log_reg) %>%
+  add_recipe(aerobic_rec2)
+
+aero_fit2 <- aero_wkfl2 %>% 
+  fit(data = train_df2) 
+
+tidy(aero_fit2)
+```
+
+```{r}
+predict(aero_fit2, test_df2)
+```
+
+```{r}
+aero_aug2 <- augment(aero_fit2, test_df2)
+
+aero_aug2 %>% select(high_impact, .pred_class)
+```
+
+```{r}
+aero_aug2$.pred_class <- as.character(aero_aug2$.pred_class)
+aero_aug2$.pred_class <- as.numeric(aero_aug2$.pred_class)
+
+aero_aug2 %>% 
+  roc_curve(truth = high_impact, .pred_class, event_level = "second") %>%
+  autoplot()
+```
+
+```{r}
+aero_aug2 %>% 
+  roc_auc(truth = high_impact, .pred_class, event_level = "second")
+```
+
+Both of these models are acceptable for predicting whether a run highly impacts performance. These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to predict when good performance will happen given a series of events. 
 
 ## References
 
