@@ -21,7 +21,7 @@ rhr_plot
 
 
 ### Average Pace ###
-average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace))+
+average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 average_pace_1321
@@ -31,7 +31,6 @@ average_pace_1821 <- run_df %>% filter(date >= "2018-01-01") %>%
   ggplot(aes(x=date,y=avg_pace))+
   geom_point()+
   geom_smooth(method = "lm")
-
 average_pace_1821
 
 # Long Disance Runs
@@ -47,7 +46,7 @@ ld
 #### Investigate cadence and avg_pace ####
 # Effect of Cadence on Average Pace
 # Potentially strong relationship
-cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace))+
+cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
@@ -57,7 +56,7 @@ cad_ap
 
 #### Investigate aerobicTE and avg_pace ####
 # Effect of Harder Aerobic Effort on Average Pace
-ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace))+
+ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
@@ -66,7 +65,7 @@ ae_ap
 
 #### Investigate avg_hr and avg_pace ####
 # Average Pace and Average Heart Rate
-hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace))+
+hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
@@ -76,7 +75,7 @@ hr_ap
 
 #### Investigate avg_pace and avg_stride ####
 # Stride and Average Pace - seems to have a very strong relationship
-garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace))+
+garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
@@ -167,11 +166,14 @@ garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=anaerobic_value))+
   geom_smooth(color = "blue")
 
 #### Investigate sweat loss and aerobicTE
-garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=aerobic_value))+
+garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=aerobic_TE))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 ####
+
+#### Heart Rate ####
+garminRun %>% ggplot(aes(x=))
 
 # Through this initial analysis, the most significant variables I've found so far are:
 # avg_pace
@@ -185,13 +187,11 @@ garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=aerobic_value))+
 
 # first, I want to do a linear regression with a target variable of speed in avg miles per hour. 
 
-speed1 <- lm(avg_spd ~ avg_pace + avg_run_cadence + avg_stride + aerobic_TE + anaerobic_value + total_ascent + avg_hr, garminRun)
+speed1 <- lm(avg_spd ~ avg_pace_sec + avg_run_cadence + avg_stride + aerobic_TE + anaerobic_value + total_ascent + avg_hr, garminRun)
 summary(speed1)
 
 speed2 <- lm(avg_spd ~ avg_run_cadence + avg_stride + aerobic_TE + anaerobic_value, garminRun)
 summary(speed2)
-
-speed3 <- lm(avg_spd ~ ., garminRun)
 
 # I still have a lot of variables to test. The variables listed above will initially get most of my focus. 
 save_data_location <- here::here("data","processed_data","run_data_clean.rds")
@@ -201,8 +201,6 @@ saveRDS(run_df, file = save_data_location) #clean data without NA dates
 # go into processing script - find other errors that prevented it from running for Dr. Handel
 # in processing script, also add binary data to factor data and create new variables for individual levels
 # start with linear and logistic regressions to see if there are any significant relationships between variables and to see if there are any potentially strong models
-
-
 
 ### End Exploratory Analysis ###
 
