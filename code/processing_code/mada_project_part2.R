@@ -440,10 +440,17 @@ garminRun1 <- left_join(garminRun,df_gs, by = "id")
 #delete other useless variables
 garminRun1 <- garminRun1 %>% select(-activity_type, -title)
 
+# add temperature data
+temp <- df1321 %>% select(date, temperature) %>% drop_na()
+
+#join to garmin set
+
+garminRun2 <- full_join(garminRun1,temp, by = "date")
+
 pacman::p_load(fastDummies)
 
 # Create variables with binary data. 0 is alway "absent" or "no", 1 is always "present" or "yes".
-garminRun_bin <- garminRun1 %>% select(id, distance,calories,avg_hr,max_hr,avg_run_cadence,
+garminRun_bin <- garminRun1 %>% select(id, distance, temperature, calories,avg_hr,max_hr,avg_run_cadence,
                                        max_run_cadence,total_ascent,total_decent,avg_stride,min_elevation,
                                        max_elevation,avg_pace_sec,best_pace_sec,week,`sweat_loss(ml)`,
                                        aerobic_TE,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)

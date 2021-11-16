@@ -13,7 +13,7 @@ pacman::p_load(tidyverse, tidymodels, here)
 garmin <- read_rds(here::here("data","processed_data", "garmin_data.rds"))
 
 # Transform data to have only the necessary variables
-df <- garmin %>% select(-id,-week, -calories) %>% drop_na()
+df <- garmin %>% select(-id, -week, -calories) %>% drop_na()
 ```
 
 The two most obvious primary target variables are average speed (avg_spd) in miles per hour, and average pace (avg_pace_sec) in seconds. A higher average speed and a lower average pace are the desired outcome when measuring performance over time. Reviewing the results of the two preliminary linear regression models, the more desirable variable is average pace, as it has stronger relationships with other variables. 
@@ -45,7 +45,7 @@ train_df <- training(df_split)
 test_df <- testing(df_split)
 
 # Create recipe
-pace_rec <- recipe(avg_hr ~ ., data = train_df)
+pace_rec <- recipe(avg_pace_sec ~ ., data = train_df)
 
 summary(pace_rec)
 ```
@@ -74,7 +74,7 @@ pace_aug <- augment(pace_fit, test_df)
 pace_aug %>% select(avg_pace_sec, .pred)
 ```
 
-The R Mean-Squared Error for this model is 5.41. In other words, this model can predict average pace within 5.41 seconds.
+The R Mean-Squared Error for this model is 5.24. In other words, this model can predict average pace within 5.24 seconds.
 
 ```{r}
 pace_error <- pace_aug %>% 
@@ -82,55 +82,6 @@ pace_error <- pace_aug %>%
 
 pace_error
 ```
-
-The most significant variables (based on p-value) are average heart rate, average cadence, average stride, and aerobic training effect. The binary variable aerobic_fct_Impacting had a good p-value, as well, but that value is related to aerobic training effect, so it is left out of this analysis. As an attempt to improve the quality of the model, only the variables with the highest p-values will be included in this analysis.
-```{r}
-set.seed(456)
-# Split data into training and testing sets
-df_split <- initial_split(df, prop = 3/4)
-
-train_df <- training(df_split)
-test_df <- testing(df_split)
-
-# Create recipe
-pace_rec_2 <- recipe(avg_pace_sec ~ avg_hr + avg_run_cadence + avg_stride + aerobic_TE, data = train_df)
-
-summary(pace_rec_2)
-```
-
-```{r}
-lreg <- linear_reg() %>%
-  set_engine("lm")
-
-pace_wflow_2 <- workflow()%>%
-  add_model(lreg) %>%
-  add_recipe(pace_rec_2)
-
-pace_fit_2 <- pace_wflow_2 %>% 
-  fit(data = train_df) 
-
-tidy(pace_fit_2)
-```
-
-```{r}
-predict(pace_fit_2, test_df)
-```
-
-```{r}
-pace_aug_2 <- augment(pace_fit_2, test_df)
-
-pace_aug_2 %>% select(avg_pace_sec, .pred)
-```
-
-Reviewing the results, the quality of the model decreased slightly. However, it seems that average pace will be a good target variable in exploring performance improvements. 
-
-```{r}
-pace_error_2 <- pace_aug_2 %>% 
-  rmse(truth = avg_pace_sec, .pred)
-
-pace_error_2
-```
-
 
 ## Logistic Regression
 
@@ -197,64 +148,9 @@ aero_aug %>%
   roc_auc(truth = high_impact, .pred_class, event_level="second")
 ```
 
-The first logistic regression is a good predictive model. The next step is to select fewer variables to see those increase the reliability of the model. 
+Both of these models are acceptable for predicting performance. In the scope of this project, it seems that average pace is the best target variable to choose. When this model is later deployed, being able to predict average pace means being able to predict how well I would perform given a set of recent runs and the temperature and elevation of a location. 
 
-```{r}
-# Create recipe. Use all variables except aerobic_TE and related
-aerobic_rec2 <- recipe(high_impact ~ middle_distance + avg_spd + min_elevation + avg_stride +
-                       avg_run_cadence + avg_hr, data = train_df2)
-
-summary(aerobic_rec2)
-```
-
-```{r}
-log_reg <- logistic_reg() %>%
-  set_engine("glm")
-
-aero_wkfl2 <- workflow()%>%
-  add_model(log_reg) %>%
-  add_recipe(aerobic_rec2)
-
-aero_fit2 <- aero_wkfl2 %>% 
-  fit(data = train_df2) 
-
-tidy(aero_fit2)
-```
-
-```{r}
-predict(aero_fit2, test_df2)
-```
-
-```{r}
-aero_aug2 <- augment(aero_fit2, test_df2)
-
-aero_aug2 %>% select(high_impact, .pred_class)
-```
-
-```{r}
-aero_aug2$.pred_class <- as.character(aero_aug2$.pred_class)
-aero_aug2$.pred_class <- as.numeric(aero_aug2$.pred_class)
-
-aero_aug2 %>% 
-  roc_curve(truth = high_impact, .pred_class, event_level = "second") %>%
-  autoplot()
-```
-
-```{r}
-aero_aug2 %>% 
-  roc_auc(truth = high_impact, .pred_class, event_level = "second")
-```
-
-Both of these models are acceptable for predicting whether a run highly impacts performance. These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to predict when good performance will happen given a series of events. 
-
-Thinking more about the aim of this project, the goal is to predict the quality of a workouts without favoring workouts that are fast. In a distance running training plan, a good-quality workout could be a lactate threshold run at race pace, or it could be a recovery run that is two or three minutes slower than race pace. One target variable that can account for these two types of workouts (and the spectrum of workouts in between) is heart rate. The idea here is that a recovery run would have a much lower heart rate, while a threshold run would have a higher heart rate. when more observations are available, many models for different workout types could be deployed (ex. one model for threshold runs, one model for easy runs, one model for recovery runs, etc). Having a target average heart rate set going into a workout would be beneficial for athletes without coaches who need to strike a balance between quality training sessions and preventing over- or under-training. 
-
-```{r}
-prelim_hr <- lm(avg_hr ~ ., df)
-summary(prelim_hr)
-```
-
-In this section, the random forest model will use k-fold cross validation and train with all variables. After more consideration about the project aims, average pace was selected as the target variable. Strictly using the aerobic training effect variable would essentially just copy the work Garmin already does. 
+These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to enhance the quality of my training set. In this section, the random forest model will use k-fold cross validation and train with all variables.
 ```{r}
 pacman::p_load(tidymodels, ranger, parallel)
 
@@ -269,10 +165,10 @@ train_df <- training(df_split)
 test_df <- testing(df_split)
 
 # Create recipe
-rf_rec <- recipe(avg_hr ~ ., data = train_df) %>%
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df) %>%
           step_dummy(all_nominal_predictors())
 
-folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
+folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_pace_sec)
 
 summary(rf_rec)
 ```
@@ -338,7 +234,7 @@ train_df1 <- training(df1_split)
 test_df1 <- testing(df1_split)
 
 # Create recipe
-rf_rec <- recipe(avg_hr ~ ., data = train_df1) %>%
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df1) %>%
           step_dummy(all_nominal_predictors())
 
 folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
@@ -409,7 +305,7 @@ train_df1 <- training(df1_split)
 test_df1 <- testing(df1_split)
 
 # Create recipe
-rf_rec <- recipe(avg_hr ~ ., data = train_df1) %>%
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df1) %>%
           step_dummy(all_nominal_predictors())
 
 folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
@@ -456,7 +352,7 @@ final_fit_rf %>% collect_metrics()
 rf_rmse <- 
   rf_res %>%
   collect_predictions(parameters = rf_best) %>%
-  rmse(avg_hr, .pred) %>%
+  rmse(avg_pace_sec, .pred) %>%
   mutate(model = "Random Forest")
 rf_rmse
 ```
@@ -472,7 +368,7 @@ train_df <- training(df_split)
 test_df <- testing(df_split)
 
 # Create recipe
-lasso_rec <- recipe(avg_hr ~ ., data = train_df)
+lasso_rec <- recipe(avg_pace_sec ~ ., data = train_df)
 
 # create folds
 folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
