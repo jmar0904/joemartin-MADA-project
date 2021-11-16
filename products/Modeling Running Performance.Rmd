@@ -214,18 +214,18 @@ final_fit_rf %>% collect_metrics()
 rf_rmse <- 
   rf_res %>%
   collect_predictions(parameters = rf_best) %>%
-  rmse(avg_hr, .pred) %>%
+  rmse(avg_pace_sec, .pred) %>%
   mutate(model = "Random Forest")
 rf_rmse
 ```
 
-This model predicts average pace within 3.2 seconds. In an attempt to improve the accuracy, some variables will be eliminated. This model ran with 21 predictors. The next iteration will eliminate four predictors: max_hr(highly-correlated with avg_hr), min_elevation, max_elevation, and sweat_loss(ml).
+This model predicts average pace within 4.4 seconds. In an attempt to improve the accuracy, some variables will be eliminated. This model ran with 21 predictors. Thinking about the purpose of this model (predicting potential race pace), there are features in this dataset which might not be available before the race. For example, speed would be related to the target (average pace) and not necessarily available as a predictor. The same goes for sweat loss. Therefore, these features will be removed. 
 
 ```{r}
 set.seed(456)
 
 #get rid of max_hr,min_elevation, max_elevation, and sweat_loss
-df1 <- df %>% select(-max_hr, -min_elevation, -max_elevation, -`sweat_loss(ml)`)
+df1 <- df %>% select(-max_spd, -avg_spd, -`sweat_loss(ml)`)
 
 # Split data into training and testing sets
 df1_split <- initial_split(df1, prop = 3/4)
@@ -283,20 +283,17 @@ final_fit_rf %>% collect_metrics()
 rf_rmse <- 
   rf_res %>%
   collect_predictions(parameters = rf_best) %>%
-  rmse(avg_hr, .pred) %>%
+  rmse(avg_pace_sec, .pred) %>%
   mutate(model = "Random Forest")
 rf_rmse
 ```
 
-The accuracy (measured by RMSE) improved slightly to 3.17. Try dropping more variables. This time, ascent, descent, aerobic factors and anaerobic factors. 
+The accuracy (measured by RMSE) got worse (7.11). Try dropping more variables. This time, ascent, descent, aerobic factors and anaerobic factors. 
 
 
 Try running the model with tuned parameters.
 ```{r}
 set.seed(456)
-
-#get rid of max_hr,min_elevation, max_elevation, and sweat_loss
-df1 <- df %>% select(-max_hr, -min_elevation, -max_elevation, -`sweat_loss(ml)`)
 
 # Split data into training and testing sets
 df1_split <- initial_split(df1, prop = 3/4)
@@ -314,7 +311,7 @@ summary(rf_rec)
 ```
 
 ```{r}
-rf_mod <- rand_forest(mtry = 6, min_n = 7, trees = 1000) %>%
+rf_mod <- rand_forest(mtry = 7, min_n = 7, trees = 1000) %>%
   set_engine("ranger", num.threads = cores) %>%
   set_mode("regression")
 
@@ -362,7 +359,7 @@ This final Random Forest model has a greater RMSE value than the previous one. O
 ```{r}
 set.seed(456)
 # Split data into training and testing sets
-df_split <- initial_split(df, prop = 3/4)
+df_split <- initial_split(df1, prop = 3/4)
 
 train_df <- training(df_split)
 test_df <- testing(df_split)

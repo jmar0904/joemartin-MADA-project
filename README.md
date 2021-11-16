@@ -36,6 +36,6 @@ Modeling Running Performance.Rmd
 
 ### Part 4 - Statistical Modeling
 
-Part 4 of this project primarily focuses on testing different statistical models on the Garmin data. In part 3, the target variables were initially average pace or aerobic training effect. After further reflection about the purpose of this project, I selected Average Heart Rate as the target variable. 
+Part 4 of this project primarily focuses on testing different statistical models on the Garmin data. In part 3, average pace and aerobic training effect. I landed on average pace as my final target variable, with the long-term idea of predicting a realistic pace based on training conditions. 
 
 Setting up these models, the assumption was that a random forest would provide strong prediction power. After trying several models, I realized that my data set has many features (more than 20). I finally landed on using a LASSO regression to select relevant predictors for me, resulting in an improved RMSE. 
