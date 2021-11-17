@@ -6,15 +6,25 @@ output: pdf_document
 ---
 # Part 1 - Background
 
+In marathon culture, the crowning achievement is qualifying for the Boston Marathon. Having some of the strictest qualifying time requirements, athletes take great care to choose qualifying races to achieve their desired time. Beyond this single event, time matters to all competitive athletes, who will work to ensure every variable for a race is perfect. When researching races, athletes will search for net down-hill courses, flat courses, or cold courses in an effort to maximize their performance. 
+
+In recent years, fitness tracking watches have become increasingly accurate and affordable, where just about every endurance athlete owns one. In fact, certain smart watch models can predict accurate values for tests like VO2 Max and lactate threshold. These heart rate-based tests are typically expensive, invasive, and reserved for professional athletes. Along with other advanced data, smart watches can provide a complete picture of a user's fitness and accurately predict race paces. 
+
+The goal of this project, therefore, is to model individual performance in an attempt to create a model that can predict average pace. The application for this model would be for choosing an eventual race. A user could theoretically use variables like distance, weather, and elevation from the race course, as well as performance variables like heart rate, stride length, and cadence to make a general prediction of how well they could perform in a race. 
+
 ## The Data Set
 
-The data I intend to use for my project is my personal running data. I started distance running in 2012 just before I got my very first smartphone. At the beginning of 2013, I started to track all of my runs in the Nike Run Club app. This was my primary way of tracking my runs. Toward the end of 2014, I started trying various other apps and mostly got the same data out of them. Apps included MapMyRun and Strava, and possibly a few more. Much of my data from 2015 and 2016 is missing and I’m unsure how to, or if I could ever, recover it. In 2017 I mostly used MapMyRun. In 2018, I moved back to  Nike Running and had a full month in 2020 when I used Strava exclusively. In April of 2020, I bought my first smartwatch (a Garmin Forerunner 245), which I’ve been using to track all of my training (running, swimming, and cycling).
+The data used for this model comes from the author's Garmin Forerunner 245 and run journal. The total data set contains more than 400 observations and more than 20 variables. Variables include date, distance, weather (temperature and conditions), total ascent, total descent, min elevation, max elevation ...
 
-I estimate that I have about 1,000 observations for running. In 2020 when we went into lockdown for COVID-19, I began moving all of my data from my various apps and accounts into a Google sheet. I mainly did this manually. I enter my data into another spreadsheet manually for my most recent runs, which I primarily use as my training journal. In this journal, I record imprecise numbers – average pace, mile/lap splits, the shoes I wore, weather, time of day/date, total distance, location of my run, distance type (short, medium, or long), and workout type (recovery, easy, speed, long distance). Along with this, I’ll also take notes about my run, like how I feel, thoughts about how my training is going, whether I’m feeling any pain or note any injuries, etc. With my Garmin watch, I have a Garmin Connect account, which automatically stores my data to the cloud. When I export data related to my activities (running, swimming, and cycling all come together), Garmin gives me a .csv file with 36 variables, although some are empty or have 0 for all values. 
+## Methodology
 
-Outside of this data, I also have access to data about my sleep and resting heart rate from my Garmin watch. Sleep data includes how long I slept, how long I spent in light sleep, deep sleep, REM sleep, and my respiration during sleep. Resting heart rate data is included below and shows my resting heart rate for each day. I'm interested in using this data and even reviewing activities outside of running (swimming and cycling) to see if they affect my performance, although I'm also hesitant to start with such a broad scope. 
+### Data Preparation
 
-Going through my data, I have noticed that most of my variables are currently stored as character data. This will be one of the first things I will need to fix to make the most out of my data.
+The data sets available had more data and fields than necessary. The initial steps involved cleaning and tidying data, then joining the primary data sets together. 
+
+### Modeling 
+
+
 
 ## Raw Data
 
