@@ -1,7 +1,7 @@
 ---
 title: "Modeling Run Performance"
 author: "Joe Martin"
-date: "10/27/2021"
+date: "11/26/2021"
 output: pdf_document
 ---
 ## Garmin Data Modeling
@@ -19,22 +19,17 @@ df <- garmin %>% select(-id, -week, -calories) %>% drop_na()
 The two most obvious primary target variables are average speed (avg_spd) in miles per hour, and average pace (avg_pace_sec) in seconds. A higher average speed and a lower average pace are the desired outcome when measuring performance over time. Reviewing the results of the two preliminary linear regression models, the more desirable variable is average pace, as it has stronger relationships with other variables. 
 
 ```{r}
-# Create preliminary model
-
+# Create preliminary test
 prelim_spd <- lm(avg_spd ~ ., df)
 summary(prelim_spd)
-
 ```
 
 ```{r}
 prelim_pace <- lm(avg_pace_sec ~ ., df)
 summary(prelim_pace)
-
 ```
 
-The ultimate goal of this model is to utilize data leading up to a performance event. As many races take place on Sunday and the typical long-distance run in this data set takes place on Sunday, the final linear regression model will begin with predicting Sunday performance.
-
-To being predicting run performance, an initial linear regression model will be built below using all available data. Based on the preliminary linear regression above, an aerobic training effect that has a high impact (value between 4 and 4.9) is strongly related to average pace. This variable will be the target variable in the logistic regression that follows. 
+The ultimate goal of this model is to utilize data leading up to a performance event. Thinking about the purpose of the model (predicting how well I can perform given a set of racing conditions), the best target variable to choose is Average Pace (using only seconds as the unit). This variable is easier to work with than total time (which is in an HMS format) while having the same outcome. It is also something I can know in real-time on runs through my watch and has actionable meaning, compared to the average speed variable. Going forward, all models will use average pace (in seconds) as the target variable and use a linear regression for prediction.
 
 ```{r}
 set.seed(456)

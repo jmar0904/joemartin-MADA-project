@@ -1,3 +1,8 @@
+#########################################################
+# This script isn't reproducible without a bit of work. In addition to the instructions below, it requires access to a Garmin Connect account.
+## To try running the script, please use the instructions. They are required in addition to the RSelenium package. 
+#########################################################
+
 # Instructions for reproducing Selenium scrape
    # For Windows and Linux. Separate instructions may be required for Mac users.
 

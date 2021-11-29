@@ -3,7 +3,10 @@
 ### Raw Data
 
 #### Run Journals
-These four files were imported from Google Sheets and saved as rds files. df2021.rds is updated at each project checkpoint to provide current data. 
+These four files were imported from Google Sheets and saved as rds files. df2021.rds is updated at each project checkpoint to provide current data. The final update took place on 24 October 2021.
+
+##### Unused Data
+The data files that were created before 2020 are no longer in use for the final part of this project. However, they are still included in the raw_data and processed_data folders in order to avoid reconfiguring the entire script. Observations before 2020 are simply removed in the final data set which was used for modeling. This leaves a total of about 430 observations.
 
 #### Garmin Data
 

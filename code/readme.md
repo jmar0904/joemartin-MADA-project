@@ -14,5 +14,3 @@ Later analyses will be saved in the analysis_code folder and shared in the maste
 garminConnectScrape.R may not be reproducible for all users. It requires a Garmin Connect account and data. Instructions for starting a remote driver with Selenium are included. End of script contains some of the data cleaning done to the raw data.
 
 Binary variables generated to describe distance of run (short,middle,long).
-
-shoe_tracking.R is not currently relevant to this project, but was built for exploration

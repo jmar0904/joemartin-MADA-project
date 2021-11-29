@@ -5,6 +5,12 @@ pacman::p_load(pacman, tidyverse, googlesheets4, lubridate, here)
 #Each project checkpoint, I'll use googlesheets4 to refresh my data
 #df2021 <- read_sheet()
 
+# At the beginning of this project, I imported my data directly from Google Sheets and saved them in the raw_data folder as Rds.
+# This import process is not reproducible in order to prevent security issues with my Google Drive folder
+
+# Everything else in this script is reproducible using the following four data files
+# Toward the end of my project I stopped using data that was recorded before 2020. This data is still included to maintain this script and does not affect my final data set. 
+
 #load data - last refreshed on 10/28/2021
 df2021 <- read_rds(here::here("data","raw_data","df2021.rds"))
 df2020 <- read_rds(here::here("data","raw_data","df2020.rds"))

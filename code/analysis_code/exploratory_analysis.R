@@ -19,25 +19,26 @@ rhr_plot <- rhr %>% ggplot(aes(x=date, y=`rhr(bpm)`))+
 
 rhr_plot
 
-
 ### Average Pace ###
 average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 average_pace_1321
 
-#From this, it looks like I'm getting slower. This doesn't show the extra distance I go or the type of run
-average_pace_1821 <- run_df %>% filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
+# Average pace and temperature
+# temperature does not seem to affect pace as much as I thought it would
+avg_pace_temp <- run_df %>% filter(avg_pace_sec < 750) %>%
+  ggplot(aes(x=temperature, y = avg_pace_sec))+
   geom_point()+
-  geom_smooth(method = "lm")
-average_pace_1821
+  geom_smooth(method = "lm", color = "red")+
+  geom_smooth(color = "blue")
+avg_pace_temp
 
 # Long Disance Runs
 ld <- run_df %>%
   filter(distance >= 12) %>%
   filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
+  ggplot(aes(x=date,y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -203,38 +204,6 @@ saveRDS(run_df, file = save_data_location) #clean data without NA dates
 # start with linear and logistic regressions to see if there are any significant relationships between variables and to see if there are any potentially strong models
 
 ### End Exploratory Analysis ###
-
-# Extras - unused plots - left for future reference
-#shoes and average pace
-run_df %>% ggplot(aes(x=date, y=avg_pace))+
-  geom_point()+
-  facet_wrap(~shoes)
-
-#From this, it looks like I'm getting slower. This doesn't show the extra distance I go or the type of run
-run_df %>% filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
-  geom_point()+
-  geom_smooth(method = "lm", color = "red")+
-  geom_smooth(color = "blue")
-
-# Maybe I am just getting slower
-run_df %>% filter(run_type != "Recovery") %>%
-  filter(datetime >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace))+
-  geom_point()+
-  geom_smooth(method = "lm", color = "red")+
-  geom_smooth(color = "blue")
-#Garmin Data
-
-#cadence
-
-garminRun %>% ggplot(aes(x=max_run_cadence, y=avg_pace))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-garminRun %>% ggplot(aes(x=datetime, y=aerobic_TE))+
-  geom_point()+
-  geom_smooth(method = "lm")
 
 # This is an incredibly interesting and helpful start for me. 
 #Seeing that increasing my stride length and increasing my cadence (number of times my feet hit the ground in a minute) is correlatd with an increased average pace shows that I can improve if I have better turn-over in my legs

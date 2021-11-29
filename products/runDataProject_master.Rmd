@@ -4,122 +4,55 @@ author: "Joe Martin"
 date: "10/8/2021"
 output: pdf_document
 ---
-# Part 1 - Background
+```{r echo=FALSE}
+pacman::p_load(tidyverse,tidymodels,here)
 
-In marathon culture, the crowning achievement is qualifying for the Boston Marathon. Having some of the strictest qualifying time requirements, athletes take great care to choose qualifying races to achieve their desired time. Beyond this single event, time matters to all competitive athletes, who will work to ensure every variable for a race is perfect. When researching races, athletes will search for net down-hill courses, flat courses, or cold courses in an effort to maximize their performance. 
+run_journal <- readRDS(here::here("data","processed_data","run_data_clean.rds"))
+garmin <- readRDS(here::here("data","processed_data","garmin_data.rds"))
+rhr <- read_csv(here::here("data","raw_data", "dailyRHR.csv")
+```
 
-In recent years, fitness tracking watches have become increasingly accurate and affordable, where just about every endurance athlete owns one. In fact, certain smart watch models can predict accurate values for tests like VO2 Max and lactate threshold. These heart rate-based tests are typically expensive, invasive, and reserved for professional athletes. Along with other advanced data, smart watches can provide a complete picture of a user's fitness and accurately predict race paces. 
+## Part 1 - Background
 
-The goal of this project, therefore, is to model individual performance in an attempt to create a model that can predict average pace. The application for this model would be for choosing an eventual race. A user could theoretically use variables like distance, weather, and elevation from the race course, as well as performance variables like heart rate, stride length, and cadence to make a general prediction of how well they could perform in a race. 
+Marathon and distance running culture revolves heavily around one goal – qualifying for the Boston Marathon. It’s so important to distance runners that it’s become a verb (ex. I’m ready for my next race. I think I might even BQ). Even outside of qualifying for the Boston Marathon, the point of training for races is improving personal records and achieving new goals. For many distance runners and other endurance athletes, great care and attention to detail is taken when preparing for a race and choosing the right race. Race organizers tend to post information about their courses like elevation, ascent, descent, and more. Some go as far as designing courses that are AATF certified and net-down-hill to allow for faster course times. 
 
-## The Data Set
+Over the last several years, fitness watches provided endurance athletes with new ways to track their training without the need to hire coaches or fancy equipment and tests, like chest-strap heart rate monitors, VO2 Max tests, or lactate threshold finger-prick tests. Models like the Garmin Forerunner 245 (the smart watch used in this project) have even been found to accurately estimate VO2 Max and lactate threshold with just the optical heartrate sensor. 
 
-The data used for this model comes from the author's Garmin Forerunner 245 and run journal. The total data set contains more than 400 observations and more than 20 variables. Variables include date, distance, weather (temperature and conditions), total ascent, total descent, min elevation, max elevation ...
+Given the need desire marathoners have to maximize their race experience, invest the right amount of time and money training and registering for a race, it would make sense that all of this data could be utilized in a model that would predict race outcomes. Runners easily have access to their own information – heart rate, average pace, ascent and descent of training runs. They also have data about the location of their training runs – elevation, weather conditions, and temperature. Adding all of these variables into a supervised learning model could help a runner search for a course that would perfectly suit their needs and abilities. 
+
+The goal of this project is to create a model which, when deployed, can take in variables of a potential race course – elevation, length, temperature, and weather conditions – and variables from the athlete – current resting heart rate, average heart rate during training, stride length, cadence, etc. – and predict the athlete’s average pace. 
+ 
 
 ## Methodology
+### Data
+
+The data used for this model comes from my Garmin Forerunner 245 and run journal. The final data set contains 417 observations and more than 20 variables. Variables include date, distance, weather (temperature and conditions), total ascent, total descent, min elevation, max elevation, cadence, average stride length, and average pace. Much of this data is replicated in my running journal. While my running journal isn't included in the model, it was used in my data exploration and pieces of it were joined with my final model set. 
+
+##### Running Journal
+```{r}
+glimpse(run_journal)
+
+head(run_journal)
+```
+
+##### Garmin Data
+```{r}
+glimpse(garmin)
+
+head(garmin)
+```
 
 ### Data Preparation
 
-The data sets available had more data and fields than necessary. The initial steps involved cleaning and tidying data, then joining the primary data sets together. 
+Early in my project, I started using data from the years 2013-2019. Initially, I thought it would be possible to model performance over time. During this period, however, I did not record my runs on a smart watch, so many of the necessary variables do not exist in this dataset. During the data preparation phase, I cleaned datasets which included data from the period 2013-2019. This data is included in the data preparation files and used in the exploratory analysis, but is not used for modeling. 
 
-### Modeling 
+The data sets available had more data and fields than necessary. The initial steps involved cleaning and tidying data, then joining the primary data sets together. Much of this work was focused on eliminating variables that were not related to running (swimming and cycling data), then ensuring that data from my run journal shared a unique identifier with my Garmin data to join on.
 
-
-
-## Raw Data
-
-Data included in this section contains my run logs from 2013 - 2021, as well as my resting heart rate from April 15, 2020 - present. Data I have available for use, but not yet ready to share includes my detailed post-run notes, sleep data, and other random calculations my Garmin watch does for me (VO2 Max, Pulse OX, stress, etc.). I'm leaving these out initially because, while I'm interested in using them, I am also concerned they will greatly broaden the scope and complexity of this project.
-
-#### Historical Data 2013 - 2018
-```{r echo=FALSE}
-# Load Packages
-pacman::p_load(pacman, rio, tidyverse, lubridate, here)
-
-# Load Run Data ############################################
-# When adding years 2013-2019, change df1 to df20 and make full dataframe out of all years
-
-# 2013 - 2018 Run Data
-data13 <- here::here("data", "raw_data","df1318.rds")
-df1318 <- read_rds(data13)
-
-# filter out dates without data
-df1318 <- df1318 %>% filter(total_time != '')
-
-```
-
-```{r}
-summary(df1318)
-```
-
-```{r}
-head(df1318)
-```
-
-#### Data from 2021
-
-Data from 2019 - 2021 is located in ~/data/raw_data. These sample dataframes are a bit too messy to be useful in this section of the project - primarily because they contain header that are irrelevant. These primarily follow the same format as data from 2013 - 2018. 
-
-```{r echo=FALSE}
-data21 <- here::here("data","raw_data", "df2021.rds")
-
-df21 <- read_rds(data21)
-```
-
-#### Data from Garmin Forerunner 245
-```{r}
-garminRun <- here::here("data","raw_data","garmin20211024.csv")
-garmin <- read_csv(garminRun)
-
-head(garminRun)
-```
-
-
-#### Resting Heart Rate 4/15/21 - Present
-```{r}
-rhr_data <- here::here("data","raw_data", "dailyRHR.csv")
-
-rhr <- read_csv(rhr_data)
-```
-
-```{r}
-summary(rhr)
-```
-
-```{r}
-head(rhr)
-```
-
-## Project Objectives
-
-Through this project, I'm interested in understanding how factors of my training program affect my performance. I would like to see if there are any significant relationships between the frequency or intensity of my training and performance. My outcomes of interest would be finding whether there are significant patterns in my pace, active heart rate, or resting heart rate. I'm also interested in seeing if I can measure qualitative outcomes through the notes I take after each run. Some of the patterns I would look for in my data would include the relationship between a positive performance outcome and variables like shoes, number of speed workouts before a race or a long run, or weekly volume (total weekly mileage or time exercising). 
-In order to search for relationships and patterns in my data, I will first need to identify specific events - like races or long runs - and compare weeks of training against each other. For example, I do one long distance run just about every week. I would be interested in understanding if my pace decreases on a long run if I had more active training days leading up to this run. I would want to see if my heart rate during similar runs (for example, long runs on the same route) decreases over time or increases after a break in training. 
-
-The other way I may go about analyzing patterns in my data would be by picking specific distances described the same way (easy, steady, tempo). For example, a common workout for me would be an up-tempo 10k (6.22 miles) or an easy 8-miler. 
-
-Finally, although I have few races in my data set, I do have a good understanding of my training program, which I follow for weeks in advance of a race. For some races, I have a detailed log of this program. I could measure my fitness ahead of a training program and compare it to my fitness just before or at race time. Measurement of fitness would include average pace, heart rate, and perhaps even ratings based on positive or negative notes taken about training sessions. 
-
-## Further Background
-
-Coaches and personal trainers are expensive to hire. Apps provide users with some basic stats about their runs, but users typically have to purchase a subscription to get useful insights into training. Further, apps often use algorithms that do not produce practical insights. For example, Garmin provides users with a Performance Condition measurement. Garmin devices display this measurement to users during a workout to tell them how their performance compares to their average fitness level. Using pace, heart rate, and heart rate variability data, Garmin displays a score from -20 (Poor) to values greater than 10 (Excellent). 
-
-This is just one example of a measurement which ignores natural variability in training sessions and directly contradicts training programs established over decades by expert coaches and researchers, like Pete Pfitzinger and Jack Daniels, PhD. These expert coaches outline training plans which have a general pattern for long distance races, from 5,000 m races, all the way to marathons. This pattern includes two general aerobic runs per week (about 1:00 per mile slower than race pace), one or two speed sessions (lactate threshold runs at race pace, tempo runs, or track intervals), one or two recovery runs (about 2:00 per mile slower than race pace or heart rate in or below Zone 3), and a long distance run. These programs build in rest days, as well, which athletes are supposed to use for recovery or cross training. 
-
-Aggregate fitness data used by companies like Garmin and Polar is useful developing insights into human performance outcomes for the average person, like in "Human running performance from real-world big data" by Thorsten Emig & Jussi Peltonen. Due to the variability in  quality distance training programs, however, aggregate measures and seemingly random algorithms are not useful in helping individual athletes understand whether they're training well.
-
-```{r load_packages_data}
-pacman::p_load(pacman, tidyverse, here)
-
-### Load Data ###
-run_df <- read_rds(here::here("data","processed_data","run_data_clean.rds"))
-garminRun <- read_rds(here::here("data","processed_data","garmin_data.rds"))
-rhr <- read_rds(here::here("data","processed_data","resting_heart_rate.rds"))
-```
-
-# Part 2 - Data Cleaning and Exploration
+## Part 2 - Data Cleaning and Exploration
 
 Instructions for reproducing my data cleaning and exploration process are in found in the readme.md file in the data folder. To reproduce code from Part 2 of this project, execute the script "mada_project_part2.R" located in "~code/processing_code". After executing this script, the figures below can be reproduced by executing the script "exploratory_analysis.R" in "~/code/analysis_code".
 
-## Data Cleaning
+### Data Cleaning
 
 This stage of my project began with loading my raw data directly from the Google sheets I use with the googlesheets4 package. This is mentioned in the notes of my script, but no longer visible. The googlesheets4 package gives the ability to write to a googlesheet, so I thought it could be risky if I potentially gave that ability to anyone accessing my GitHub. Files for years 2013-2021 were loaded and saved as .rds files before processing. I left a line of code commented out so I'm able to paste in my Google sheet for year 2021 and update data frequently. At this stage, I also imported data from my Garmin Connect account for all of my runs since April 2020, as well as my resting heart rate data.
 
@@ -132,9 +65,9 @@ My plan moving into data analysis is to keep a separate dataframe for my run jou
 To complete my data cleaning, I coerced each variable into its necessary type. The most challenging variable has proven to be average pace. This is likely one of the most important variables in my set (if not <em>the</em> most important), so I may need to rethink how I'm using this variable going forward. I ultimately ended by coercing it, as well as best_pace in the Garmin data set, using as.POSIXct. This is not ideal because as.POSIXct also assigns a date value. However, this was good enough to begin analysis. 
 Following processing, clean datasets were saved as rds files in "~/data/processed_data". Notably, I saved two versions of my journal data - one set eliminates NAs for days I didn't run (1,202 observations), one of them retains them(more than 3,000 observations). The purpose of this was to retain notes I kept on days I did not run. 
 
-## Exploratory Analysis
+## Part 3 - Exploratory Analysis
 
-My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and, therefore, could not give me useful information about correlations.
+My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and time data, therefore, could not give me useful information about correlations. From this experience, I decided to change my average pace variable from hms format to seconds, measured as a numeric value.
 
 I purposely chose variables I anticipated would have significant p-values. I wanted to understand which variables would be most important to my future analysis and modeling, especially if I can introduce new variables, like miles per week and shoes.
 
@@ -142,44 +75,21 @@ The plots below were generated with the "exploratory_analysis.R" script.
 
 ### Relationships
 
-#### Resting Heart Rate
-
-This plot show that my heart rate consistently remains around 47 bpm. There are significant outliers in this data that may skew the results higher. If I don't wear my Garmin watch all day and all night, my resting heart rate can be recorded as 60-70 bpm, which is very unlikely.
-
-In future analyses, it will be interesting to compare this data to variables like weekly training volume, cadence, and average pace.
-```{r rhr}
-rhr_plot <- rhr %>% ggplot(aes(x=date, y=`rhr(bpm)`))+
-  geom_line()+
-  geom_smooth(method = "lm")
-
-rhr_plot
-```
-
 #### Average Pace
 Average pace is crucial to many of my analyses. Going forward, I will work on finding a better way to coerce this data into a time format that's usable in statistical models.
 
-Over the past 8 years, my overall average pace has decreased, depsite my increas in true recovery runs this year. A recovery run is a very easy run where my heart rate stays in or below Zone 3.
+Over the past 8 years, my overall average pace has decreased, despite my increase in true recovery runs this year. A recovery run is a very easy run where my heart rate stays in or below Zone 3.
 ```{r average_pace_1321}
-average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace_sec))+
+average_pace_1321 <- run_journal %>% ggplot(aes(x=date, y= avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 average_pace_1321
 ```
 
-Over the past 3 years, however, my recovery runs have made my average pace slower.
-```{r average_pace_1821}
-average_pace_1821 <- run_df %>% filter(date >= "2018-01-01") %>%
-  ggplot(aes(x=date,y=avg_pace_sec))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-average_pace_1821
-```
-
 For a better measure of my performance, I'll look at my longer distance runs - anything over 12 miles. The pace for these runs has decreased over time. 
 ```{r ld}
 # Long Disance Runs
-ld <- run_df %>%
+ld <- run_journal %>%
   filter(distance >= 12) %>%
   filter(date >= "2018-01-01") %>%
   ggplot(aes(x=date,y=avg_pace_sec))+
@@ -192,7 +102,7 @@ ld
 Cadence is the measure of how many times a runner's feet hit the ground per minute. A high cadence is typically associated with a faster pace. 
 ```{r cad_ap}
 # Effect of Cadence on Average Pace
-cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace_sec))+
+cad_ap <-garmin %>% ggplot(aes(x=avg_run_cadence, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -202,7 +112,7 @@ cad_ap
 Aerobic TE is a measurement Garmin created to rate an aerobic effort. On a scale from 1-5, 5 is a maximum effort. This is good stress for the body, but requires a lot of rest time afterwards. 1 is minimal and typically associated with other types of exercise besides running. This 
 ```{r ae_ap}
 # Effect of Harder Aerobic Effort on Average Pace
-ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace_sec))+
+ae_ap<- garmin %>% ggplot(aes(x=aerobic_TE, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -212,7 +122,7 @@ ae_ap
 Average heart rate may be another important variable in my project.
 ```{r hr_ap}
 # Average Pace and Average Heart Rate
-hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace_sec))+
+hr_ap <- garmin %>% ggplot(aes(x=avg_hr, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -222,7 +132,7 @@ hr_ap
 Greater stride length seems to be associated with a greater pace. This seems counter-intuitive if thinking about cadence in this equations, but with good form and mechanics, greater cadence is more likely to be associated with greater stride length.
 ```{r st_ap}
 # Stride and Average Pace
-st_ap <- garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
+st_ap <- garmin %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -233,7 +143,7 @@ st_ap
 
 Correlation between cadence and stride
 ```{r cadence_stride}
-ca_stride <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_stride))+
+ca_stride <- garmin %>% ggplot(aes(x=avg_run_cadence, y=avg_stride))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -241,42 +151,37 @@ ca_stride
 ```
 
 Living in the Southern US, we have to deal with high temperatures. Marathons typically aren't held in the summer for a reason. Excessive heat is not only known to decrease performance, but can be dangerous. Although it can't be totally avoided, I try not to run when it's too hot out.
-```{r temp_dist}
+
+However, it seems that weather doesn't seem to have a major influence on my performance. I expected to see a steep incline from the origin to the end of the plot. This could possibly be explained by my training cycle. Colder months tend to be my "off-season" where I maintain fitness. Running races in the beginning of the winter, I do very little hard training in the cold.
+```{r temp_pace}
 # Temperature
 # I'm less likely to run far when it gets hot out. 
-fit1 <- lm(distance ~ temperature, run_df)
+fit1 <- lm(avg_pace_sec ~ temperature, run_journal)
 summary(fit1)
 
-temp_dist <- run_df %>% ggplot(aes(x=temperature, y = distance))+
-  geom_point()+
-  geom_smooth(method = "lm")
-
-temp_dist
-```
-
-```{r temp_pace}
-temp_pace <- run_df %>% ggplot(aes(x=temperature, y = avg_pace_sec))+
+temp_pace <- run_journal %>% ggplot(aes(x=temperature, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 
 temp_pace
 ```
 
-Hill training is crucial for success in any race and research shows that hill intervals can better prepare runners than any other type of training. 
-```{r hr_ascent_plot}
-#avg_hr, total_ascent
-hr_ascent <- lm(avg_hr~total_ascent,garminRun)
-summary(hr_ascent)
 
-hr_ascent_plot <-garminRun %>% ggplot(aes(x=avg_hr, y = total_ascent))+
+Hill training is crucial for success in any race and research shows that hill intervals can better prepare runners than any other type of training. As expected, my pace decreases as elevation increases. 
+```{r pace_ascent_plot}
+#avg_hr, total_ascent
+pace_ascent <- lm(avg_pace_sec~total_ascent,garmin)
+summary(pace_ascent)
+
+pace_ascent_plot <-garmin %>% ggplot(aes(x=avg_pace_sec, y = total_ascent))+
   geom_point()+
   geom_smooth(method = "lm")
 
-hr_ascent_plot
+pace_ascent_plot
 ```
-
+However, the Aerobic Training Effect variable shows that I improve my aerobic training when I run uphill.
 ```{r ae_ta}
-ae_ta <- garminRun %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
+ae_ta <- garmin %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
   geom_point()+
   geom_smooth(method = "lm")
 
@@ -285,8 +190,13 @@ ae_ta
 
 ## Statistical Modeling
 
+To reiterate the goal of this paper, I would like to create a model that can predict how I could perform on a given course on a given day. In order to complete this goal, I will need to predict my average pace. Since this is a numeric variable measured only in seconds, I will use a linear regression for this model. 
+
+At the beginning of this project I anticipated having far more data - more than 1000 observations. This decreased to about 420 after deciding only to use data from my smart watch. This is relatively few and 
+
+
 ### Adding New Variables
-In "Human runnign performance from real-world big data," authors Emig and Peltonen create a statistical model based on fields captured by the Polar V800 fitness watch, including measures like <em>p = power, v = velocity, t = time,</em> as well as maximal aerobic power (MAP), VO2 Max, anaerobic endurance. These variables go into their model to predict performance during a marathon. 
+In "Human running performance from real-world big data," authors Emig and Peltonen create a statistical model based on fields captured by the Polar V800 fitness watch, including measures like <em>p = power, v = velocity, t = time,</em> as well as maximal aerobic power (MAP), VO2 Max, anaerobic endurance. These variables go into their model to predict performance during a marathon. 
 
 Since processing my data for the first time, I found even more measurements I was interested in inspecting on Garmin Connect, the online dashboard which hosts the data from my watch. For some reason, this data is readily available on individual run records in the website dashboard, but not included in any csv files I'm allowed to export. Therefore, I created a new script which uses RSelenium to take this data from Garmin Connect. This adds the variables Anaerobic Training Effect (anaerobic_value), Average Speed (avg_spd), Average Moving Speed(avg_moving_spd), and Maximum Speed (max_spd). Additionally, I added the variable for estimated sweat loss out of curiosity. 
 
@@ -363,125 +273,280 @@ pace_error <- pace_aug %>%
 pace_error
 ```
 
-## Logistic Regression
+These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to enhance the quality of my training set. In this section, the random forest model will use k-fold cross validation and train with all variables.
+```{r}
+pacman::p_load(tidymodels, ranger, parallel)
 
-Working with this data, I hypothesized that aerobic training effects that had a high impact (value of 4.0 - 4.9) would be a good target variable for a predictive model. The logistic regression models were both successful with ROC_AUC values greater than .7. 
+cores <- parallel::detectCores()
 
+set.seed(456)
 
+# Split data into training and testing sets
+df_split <- initial_split(df, prop = 3/4)
 
-#### All Variables
+train_df <- training(df_split)
+test_df <- testing(df_split)
 
-This first logistic regression is meant to predict whether an activity highly impacts aerobic training. This variable is relevant because it is the highest measure for aerobic conditioning without being over-reaching. In this analysis, calories and other variables related to aerobic training effect were removed. 
+# Create recipe
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df) %>%
+          step_dummy(all_nominal_predictors())
+
+folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_pace_sec)
+
+summary(rf_rec)
+```
+
+```{r}
+rf_mod <- rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>%
+  set_engine("ranger", num.threads = cores) %>%
+  set_mode("regression")
+
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_recipe(rf_rec)
+
+rf_res <- rf_wf %>%
+  tune_grid(folds,
+            grid = 25,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(rmse))
+```
+
+```{r}
+rf_res %>%
+  show_best(metric = "rmse")
+
+autoplot(rf_res)
+```
+
+```{r}
+rf_best <- rf_res %>%
+  select_best(metric = "rmse")
+rf_res %>% collect_predictions()
+```
+
+```{r}
+final_rf_wf <- rf_wf %>%
+  finalize_workflow(rf_best)
+
+final_fit_rf <- final_rf_wf %>%
+  last_fit(df_split)
+
+final_fit_rf %>% collect_metrics()
+
+rf_rmse <- 
+  rf_res %>%
+  collect_predictions(parameters = rf_best) %>%
+  rmse(avg_pace_sec, .pred) %>%
+  mutate(model = "Random Forest")
+rf_rmse
+```
+
+This model predicts average pace within 4.4 seconds. In an attempt to improve the accuracy, some variables will be eliminated. This model ran with 21 predictors. Thinking about the purpose of this model (predicting potential race pace), there are features in this dataset which might not be available before the race. For example, speed would be related to the target (average pace) and not necessarily available as a predictor. The same goes for sweat loss. Therefore, these features will be removed. 
+
 ```{r}
 set.seed(456)
 
-df2 <- df %>% mutate(high_impact = ifelse(aerobic_fct == "Highly Impacting", 1,0))
-df2$high_impact <- factor(df2$high_impact)
+#get rid of max_hr,min_elevation, max_elevation, and sweat_loss
+df1 <- df %>% select(-max_spd, -avg_spd, -`sweat_loss(ml)`)
 
 # Split data into training and testing sets
-df2_split <- initial_split(df2, prop = 3/4)
+df1_split <- initial_split(df1, prop = 3/4)
 
-train_df2 <- training(df2_split)
-test_df2 <- testing(df2_split)
+train_df1 <- training(df1_split)
+test_df1 <- testing(df1_split)
 
-# Create recipe. Use all variables except aerobic_TE and related
-aerobic_rec <- recipe(high_impact ~ short_distance + middle_distance + long_distance + 
-                        max_spd + avg_spd + anaerobic_value + `sweat_loss(ml)` + best_pace_sec +
-                        avg_pace_sec + max_elevation + min_elevation + avg_stride +
-                        total_decent + total_ascent + max_run_cadence + avg_run_cadence + 
-                        max_hr + avg_hr + distance, data = train_df2)
+# Create recipe
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df1) %>%
+          step_dummy(all_nominal_predictors())
 
-summary(aerobic_rec)
+folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
+
+summary(rf_rec)
 ```
 
 ```{r}
-log_reg <- logistic_reg() %>%
-  set_engine("glm")
+rf_mod <- rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>%
+  set_engine("ranger", num.threads = cores) %>%
+  set_mode("regression")
 
-aero_wkfl <- workflow()%>%
-  add_model(log_reg) %>%
-  add_recipe(aerobic_rec)
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_recipe(rf_rec)
 
-aero_fit <- aero_wkfl %>% 
-  fit(data = train_df2) 
-
-tidy(aero_fit)
+rf_res <- rf_wf %>%
+  tune_grid(folds,
+            grid = 25,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(rmse))
 ```
 
 ```{r}
-predict(aero_fit, test_df2)
+rf_res %>%
+  show_best(metric = "rmse")
+
+autoplot(rf_res)
 ```
 
 ```{r}
-aero_aug <- augment(aero_fit, test_df2)
-
-aero_aug %>% select(high_impact, .pred_class)
+rf_best <- rf_res %>%
+  select_best(metric = "rmse")
+rf_res %>% collect_predictions()
 ```
 
 ```{r}
-aero_aug$.pred_class <- as.character(aero_aug$.pred_class)
-aero_aug$.pred_class <- as.numeric(aero_aug$.pred_class)
+final_rf_wf <- rf_wf %>%
+  finalize_workflow(rf_best)
 
-aero_aug %>% 
-  roc_curve(truth = high_impact, .pred_class, event_level="second") %>%
-  autoplot()
+final_fit_rf <- final_rf_wf %>%
+  last_fit(df1_split)
+
+final_fit_rf %>% collect_metrics()
+
+rf_rmse <- 
+  rf_res %>%
+  collect_predictions(parameters = rf_best) %>%
+  rmse(avg_pace_sec, .pred) %>%
+  mutate(model = "Random Forest")
+rf_rmse
+```
+
+The accuracy (measured by RMSE) got worse (7.11). Try dropping more variables. This time, ascent, descent, aerobic factors and anaerobic factors. 
+
+
+Try running the model with tuned parameters.
+```{r}
+set.seed(456)
+
+# Split data into training and testing sets
+df1_split <- initial_split(df1, prop = 3/4)
+
+train_df1 <- training(df1_split)
+test_df1 <- testing(df1_split)
+
+# Create recipe
+rf_rec <- recipe(avg_pace_sec ~ ., data = train_df1) %>%
+          step_dummy(all_nominal_predictors())
+
+folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
+
+summary(rf_rec)
 ```
 
 ```{r}
-aero_aug %>% 
-  roc_auc(truth = high_impact, .pred_class, event_level="second")
-```
+rf_mod <- rand_forest(mtry = 7, min_n = 7, trees = 1000) %>%
+  set_engine("ranger", num.threads = cores) %>%
+  set_mode("regression")
 
-#### Most significant variables
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_recipe(rf_rec)
 
-```{r}
-# Create recipe. Use all variables except aerobic_TE and related
-aerobic_rec2 <- recipe(high_impact ~ middle_distance + avg_spd + min_elevation + avg_stride +
-                       avg_run_cadence + avg_hr, data = train_df2)
-
-summary(aerobic_rec2)
-```
-
-```{r}
-log_reg <- logistic_reg() %>%
-  set_engine("glm")
-
-aero_wkfl2 <- workflow()%>%
-  add_model(log_reg) %>%
-  add_recipe(aerobic_rec2)
-
-aero_fit2 <- aero_wkfl2 %>% 
-  fit(data = train_df2) 
-
-tidy(aero_fit2)
+rf_res <- rf_wf %>%
+  tune_grid(folds,
+            grid = 25,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(rmse))
 ```
 
 ```{r}
-predict(aero_fit2, test_df2)
+rf_res %>%
+  show_best(metric = "rmse")
 ```
 
 ```{r}
-aero_aug2 <- augment(aero_fit2, test_df2)
-
-aero_aug2 %>% select(high_impact, .pred_class)
+rf_best <- rf_res %>%
+  select_best(metric = "rmse")
+rf_res %>% collect_predictions()
 ```
 
 ```{r}
-aero_aug2$.pred_class <- as.character(aero_aug2$.pred_class)
-aero_aug2$.pred_class <- as.numeric(aero_aug2$.pred_class)
+final_rf_wf <- rf_wf %>%
+  finalize_workflow(rf_best)
 
-aero_aug2 %>% 
-  roc_curve(truth = high_impact, .pred_class, event_level = "second") %>%
-  autoplot()
+final_fit_rf <- final_rf_wf %>%
+  last_fit(df1_split)
+
+final_fit_rf %>% collect_metrics()
+
+rf_rmse <- 
+  rf_res %>%
+  collect_predictions(parameters = rf_best) %>%
+  rmse(avg_pace_sec, .pred) %>%
+  mutate(model = "Random Forest")
+rf_rmse
+```
+
+This final Random Forest model has a greater RMSE value than the previous one. One of the concerns with the dataset is the greater number of features (21 total predictors avialable). LASSO may be a good option to automate feature selection. 
+
+```{r}
+set.seed(456)
+# Split data into training and testing sets
+df_split <- initial_split(df1, prop = 3/4)
+
+train_df <- training(df_split)
+test_df <- testing(df_split)
+
+# Create recipe
+lasso_rec <- recipe(avg_pace_sec ~ ., data = train_df)
+
+# create folds
+folds <- vfold_cv(train_df, v = 10, repeats = 5, strata = avg_hr)
+
+summary(lasso_rec)
 ```
 
 ```{r}
-aero_aug2 %>% 
-  roc_auc(truth = high_impact, .pred_class, event_level = "second")
+lasso_mod <- linear_reg(penalty = tune(), mixture = 1) %>%
+  set_engine("lm")
+
+lasso_wkfl <- workflow() %>%
+  add_model(lasso_mod) %>%
+  add_recipe(lasso_rec)
 ```
 
-Both of these models are acceptable for predicting whether a run highly impacts performance. These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to predict when good performance will happen given a series of events. 
+```{r}
+# create penalty grid for tuning
+lasso_grid <- tibble(penalty = 10^seq(-4, -1, length.out = 30))
+
+# lowest penalties
+lasso_grid %>% top_n(-5)
+
+#highest penalties
+lasso_grid %>% top_n(5)
+```
+
+```{r}
+lasso_res <- lasso_wkfl %>%
+  tune_grid(folds,
+            grid = lasso_grid,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(rmse))
+```
+
+```{r}
+top_models <- lasso_res %>%
+  show_best("rmse")
+top_models
+```
+
+```{r}
+lasso_best <- lasso_res %>%
+  select_best("rmse")
+lasso_best
+
+final_lasso_wf <- lasso_wkfl %>%
+  finalize_workflow(lasso_best)
+
+final_lasso_fit <- final_lasso_wf %>%
+  last_fit(df_split)
+
+final_lasso_fit %>% collect_metrics()
+```
+
+The LASSO model does improve the RMSE and is likely the best path forward. The next steps in this project will be to further tune this model. 
 
 ## References
 
 Emig, T., Peltonen, J. Human running performance from real-world big data. Nat Commun 11, 4936 (2020). https://doi.org/10.1038/s41467-020-18737-6
+
