@@ -1,0 +1,219 @@
+---
+title: Project Review for Joe Martin - Morgan Taylor
+date: "`r file.mtime(knitr::current_input())`"
+output: 
+  html_document:
+    theme: flatly
+    toc: FALSE
+---
+
+# Overview
+
+Title of project: MADA Project
+
+Name of project author(s): Joe Martin
+
+Name of project reviewer: Morgan Taylor
+
+---
+
+# Review Structure
+This review is broken into two primary parts: (1) content evaluation and (2) overall review. Each section includes a numbered list of elements considered in the review.
+
+Each element considered has the following structure:
+
+* Brief description of criteria for evaluation
+* Feedback and comments
+* Summary assessment
+
+---
+
+# Specific project content evaluation
+This review evaluates the content of the project by the following components:
+
+1. Background, Context, and Motivation
+2. Question Description
+3. Data Description
+4. Data Wrangling & Exploratory Analysis
+5. Appropriateness of Analysis
+6. Presentation
+7. Discussion / Conclusion
+
+---
+
+# Specific project content evaluation
+This review evaluates the content of the project by the following components:
+
+1. Background, Context, and Motivation
+2. Question Description
+3. Data Description
+4. Data Wrangling & Exploratory Analysis
+5. Appropriateness of Analysis
+6. Presentation
+7. Discussion / Conclusion
+
+---
+
+## Background, Context and Motivation
+How well is the context of the project described? Is a comprehensive background, including summary of previous/related work given? Is the project well placed into the context of existing work (including proper referencing of existing work). Is it clear why the project was undertaken and what new information it hopes to provide?
+
+### Feedback and Comments
+The structure is confusing, but I think there is defined rationale and motivation for this project. The background and context are provided on various pages and in several sections, which makes it difficult to fully comprehend. I would strongly suggest adding some references about the accuracy of personal fitness devices, as there is a wealth of published literature that influences the interpretation of your results.
+
+### Summary assessment
+* some contextualization and motivation
+
+---
+
+## Question description
+How well and clear are the question(s)/hypotheses the project aims to address described? Is it clear how the questions relate to the data?
+
+### Feedback and Comments
+The research question is clearly defined in the report, and data largely supports the question, assuming that the research question is predicting run performance. I'm not sure I entirely understand the logic behind the model application. Why does predicted race performance influence the race a runner may choose? Isn't that essentially just confirmation bias if you only run the races where you know you'll do well? Additionally, is weather for the race course available at the time that you choose to run the race? I believe formal race registration is often months ahead of the actual race day.
+
+There's a section on page 6 of the report that also discusses project objectives, but I'm confused how this integrates with the introduction.
+
+### Summary assessment
+* question/hypotheses somewhat explained
+
+---
+
+## Data description
+How well is the data overall described? Is the source provided? Is a codebook or other meta-information available that makes it clear what the data is? 
+
+### Feedback and Comments
+There is plenty of description of the data, but the volume makes it difficult to synthesize and fully understand. There is no codebook or other meta-information, and I think some form of documentation that explains the variables for each source would be incredibly helpful.
+
+### Summary assessment
+* source and overall structure of data somewhat explained
+
+---
+
+## Data wrangling and exploratory analysis
+How well is the data cleaned/processed and explored? Are all steps reasonable and well explained? Are alternatives discussed and considered? Are meaningful exploratory results shown (e.g. in the supplementary materials)?
+
+### Feedback and Comments
+Processing script is reproducible. There's a lot of unnecessary code that I would suggest removing. There are also a few instances of NAs introduced by coercion in the processing script, so verify those are intentional NAs. 
+
+If the data from 2013-2019 is not included in the modeling analysis, I'm not sure why it needs to be in the exploratory analysis. It's essentially meaningless within the context of the research question.
+
+The exploratory analysis is well justified and defined, but there are also several notes that suggest you'll fix it in the future (and haven't done so, as far as I can tell). The warnings about removed rows in the ggplots warrant a further solution / clarification. As the number changes by plot, it makes me think that it's either missing data or plot range specification.
+
+As it relates to your date format, you could always just change it to day number since the start of the study. Dates are essentially arbitrary anyways, so by using a day variable, you could still visualize correlations and other necessary relationships.
+
+### Summary assessment
+* some weaknesses in wrangling and exploratory component
+
+---
+
+## Appropriateness of Analysis
+Were the analysis methods appropriate for the data? Was the analysis done properly? Were different components of the analysis (e.g. performance measure, variable selection, data pre-processing, model evaluation) done in the best way possible and explained well?
+
+### Feedback and Comments
+It's my understanding that the analysis includes a linear regression, a logistic regression, a random forest, and LASSO. The logistic regression is confusing as it does not utilize the same outcome of interest as the other models or the specified research question, which makes it hard to compare and interpret.
+
+The Random Forest model development comes across as data mining, or choosing arbitrary variables to make a pretty model (especially the third iteration). This is a personal pet peeve of mine but also generally frowned upon in the field of epidemiology.
+
+For any of the models, there is no analysis of sources of error or fit consideration. Dr. Handel's posted example for the ML exercise has some great examples, such as predicted fit vs actual fit and residual analysis. These are critical in assessing the fit of a model to your data.
+
+For both the Random Forest and LASSO models, it would be beneficial to identify the most important variables in the chosen model. This will help with interpretation and conclusions.
+
+Lastly, in model analyses such as this project, the training dataset is fit to each of the models, and then the testing dataset is only fit once, at the end, for the chosen best model across all possible methods. We only fit the test data once as computers are smart and "learn" the test data, which affects model performance.
+
+### Summary assessment
+* wrong/inadequate analysis
+
+---
+
+## Presentation
+How well are results presented? Are tables and figures easy to read and understand? Are the main figures/tables publication level quality? 
+
+### Feedback and Comments
+I found it incredibly difficult to follow the results of the project. Generally, a final report markdown file should only include calls to other saved files and should not include all of the analysis code. Large sections of the report belong in a supplement, and only the results addressing the original research question should be included in the report.
+
+### Summary assessment
+* results are poorly presented, hard to understand, poor quality
+
+---
+
+## Discussion/Conclusions
+Are the study findings properly discussed? Are strengths and limitations acknowledged? Are findings interpreted properly?
+
+### Feedback and Comments
+Results are briefly analyzed throughout the script, but there is no specific discussion or conclusion section.
+
+### Summary assessment
+* major parts of discussion missing or wrong 
+
+---
+
+## Further comments
+Verify with Dr. Handel, but I believe the end product of the project is supposed to be a manuscript. I highly encourage you reformat your report to represent a publishable manuscript. It currently reads like a lab notebook instead of a synthesized report.
+
+---
+
+# Overall project content evaluation
+This portion of the review examines the overall project by the following components:
+
+1. Structure
+2. Documentation
+3. Reproducibility
+4. Thoroughness
+
+---
+
+## Structure
+Is the project well structured? Are files in well labeled folders? Do files have reasonable names? Are all "junk" files not needed for analysis/reproduction removed? By just looking at files and folders, can you get an idea of how things fit together?
+
+### Feedback and Comments
+The 'ReadMe.md' for the overall repository is clear, but the `readme.md` in the products folder does not match the project. The PDF and word versions of the report don't match the markdown file.
+
+### Summary assessment
+* mostly clear, but some confusing parts (e.g. useless files, things in the wrong folders)
+
+---
+
+## Documentation 
+How well is the project documented? Are you able to understand each step of the whole analysis, each decision that was made, and each line of code? Is enough information provided as comments in code or as part of Rmd files? 
+
+### Feedback and Comments
+I know a lot of people prefer r scripts instead of markdown files, but if you use an r script, adjust the lines so that they do not extend past the window. It makes it difficult to read/understand the code.
+
+I think this is the majority of the remaining work for this project. It's incredibly difficult to synthesize the whole analysis and to follow decisions.
+
+### Summary assessment
+* poorly documented
+
+---
+
+## Reproducibility
+Are all results fully reproducible? Is documentation provided which clearly explains how to reproduce things, and does it work without the need for any manual intervention? Are you able to re-run the whole analysis without having to do manual interventions/edits?
+
+### Feedback and Comments
+Unfortunately, I couldn't install Docker on my computer to reproduce the analysis as my Windows Server OS is not compatible with it. My only other computer is a Mac, and I couldn't figure out how to reproduce Selenium scrape on it.
+
+I also was not able to run any of the random forest models or the LASSO model.
+
+### Summary assessment
+* major parts not reproducible 
+
+---
+
+## Thoroughness
+How thorough was the overall study? Were alternatives (e.g. different ways of processing the data or different models) considered? Were alternatives discussed? Were the questions/hypotheses fully and thoroughly addressed?
+
+### Feedback and Comments
+There are a number of models considered in the analysis, and there's an extremely thorough data wrangling process. However, I'm not sure that the current analysis full addresses the research question. I think there's some additional work to be done to identify the relevant information from the models to answer the question.
+
+### Summary assessment
+* decent level of thoroughness
+
+---
+
+## Further comments
+
+Ultimately, I would suggest you reach out to Dr. Handel to clarify expectations about the project. It's my understanding that he's looking for an extremely polished, manuscript-style report.
+
+
+
+
