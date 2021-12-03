@@ -1,0 +1,182 @@
+---
+title: Project Review Template 
+date: "`r file.mtime(knitr::current_input())`"
+#bibliography: ../media/references.bib
+output: 
+  html_document:
+    toc_depth: 3
+    number_sections: true
+---
+
+# Overview
+
+Title of project:
+
+Name of project author(s): Joe Martin
+
+Name of project reviewer: Sophia Drewry
+
+
+# Specific project content evaluation
+Evaluate the different parts of the project by filling in the sections below.
+
+
+## Background, Context and Motivation
+How well is the context of the project described? Is a comprehensive background, including summary of previous/related work given? Is the project well placed into the context of existing work (including proper referencing of existing work). Is it clear why the project was undertaken and what new information it hopes to provide?
+
+### Feedback and Comments
+
+I thought your background and rationale was well described! There is notany previous literature cited, however since it is a personal project I dont know if it is necessary. I was a little confused on the running journal, is it from your watch or is it something ou came up with ppersonaally? Overall clear and interesting!
+
+Just a note, you forgot a () when loading files, so I added it
+rhr <- read_csv(here::here("data","raw_data", "dailyRHR.csv"))
+
+### Summary assessment (PICK ONE, DELETE THE OTHERS)
+* strong contextualization and motivation
+
+
+## Question description
+How well and clear are the question(s)/hypotheses the project aims to address described? Is it clear how the questions relate to the data?
+
+
+### Feedback and Comments
+
+Clean and simple question.
+
+### Summary assessment
+
+* question/hypotheses fully clear
+
+
+## Data description
+How well is the data overall described? Is the source provided? Is a codebook or other meta-information available that makes it clear what the data is? 
+
+### Feedback and Comments
+Data is described well. Still a little confused if run journal is from your watch and what relation it has to your watch data. 
+
+### Summary assessment
+* source and overall structure of data well explained
+
+
+## Data wrangling and exploratory analysis
+How well is the data cleaned/processed and explored? Are all steps reasonable and well explained? Are alternatives discussed and considered? Are meaningful exploratory results shown (e.g. in the supplementary materials)?
+
+### Feedback and Comments
+
+You mentioned this in your read.me, but I could not reproduce garminConnectScrape.R, which I expected. I can see your processing workflow. As for your mada_project_part2.R, everything was easily reproducible.  Everything was well documented. You had quite a lot of tedious data cleaning to do!
+As for the exploratory analysis.R, everything ran as well. I thought all of your graphs teased out the data well, the only thing I would be interested is the possible interaction between pace and distance (long runs may have longer average mile times compared to short runs). Graphing based on run type may be interesting. But overall through.
+
+
+The graph below in exploratory analysis.R did not run for me
+Investigate avg_spd and aerobic TE ####
+garminRun %>% ggplot(aes(x=avg_spd, y=aerobic_value))+
+  geom_point()+
+  geom_smooth(method = "lm", color = "red")+
+  geom_smooth(color = "blue")
+
+
+### Summary assessment
+
+* essentially no weaknesses in wrangling and exploratory component
+
+
+
+## Appropriateness of Analysis
+Were the analysis methods appropriate for the data? Was the analysis done properly? Were different components of the analysis (e.g. performance measure, variable selection, data pre-processing, model evaluation) done in the best way possible and explained well?
+
+### Feedback and Comments
+
+I ran Modeling Run Performance.Rmd with only a couple issues that may be on my end. I could not run your Lasso or Random Forest but I have always had to use the parallel cores function so that could be why. I could easily follow your code for those two models. I thought everything was well documented and you did a good job of translating all these findings in your manuscript. I may have glanced over it but did you do any correlation plots or tables? That may aid your interpretation of variables that you excluded. 
+
+### Summary assessment
+
+* strong and reasonable analysis
+
+## Presentation
+How well are results presented? Are tables and figures easy to read and understand? Are the main figures/tables publication level quality? 
+
+### Feedback and Comments
+
+Yes! All plots look great and are implemented in the manuscript. Like I said earlier, stratifying by run type may be interesting in EDA. 
+
+### Summary assessment
+
+* results are very well presented
+
+
+## Discussion/Conclusions
+Are the study findings properly discussed? Are strengths and limitations acknowledged? Are findings interpreted properly?
+
+### Feedback and Comments
+
+I would add some discussion in your manuscript before turning it in. Maybe talk about how you will use these findings? Or you can even test out the predict() and see if you can predict your next average pace. 
+
+### Summary assessment
+* major parts of discussion missing or wrong 
+
+
+
+## Further comments
+
+_Add any other comments regarding the different aspects of the project here. Write anything you think can help your classmate improve their project._
+
+
+
+# Overall project content evaluation
+Evaluate overall features of the project  by filling in the sections below.
+
+
+## Structure
+Is the project well structured? Are files in well labeled folders? Do files have reasonable names? Are all "junk" files not needed for analysis/reproduction removed? By just looking at files and folders, can you get an idea of how things fit together?
+
+### Feedback and Comments
+
+Well structured, maybe consider moving your final analysis into the analysis_code file.
+
+### Summary assessment
+* well structured
+
+
+## Documentation 
+How well is the project documented? Are you able to understand each step of the whole analysis, each decision that was made, and each line of code? Is enough information provided as comments in code or as part of Rmd files? 
+
+### Feedback and Comments
+
+Ok I could be totally wrong on this, but my interpretating of the manuscript was to just include model diagnostic plot and rmse, not the actual code. Overall you provided nice interpretations of every chunk you entered
+
+### Summary assessment
+* fully and well documented
+
+
+
+## Reproducibility
+Are all results fully reproducible? Is documentation provided which clearly explains how to reproduce things, and does it work without the need for any manual intervention? Are you able to re-run the whole analysis without having to do manual interventions/edits?
+
+### Feedback and Comments
+
+Yes!
+
+
+### Summary assessment
+* fully reproducible without issues
+
+
+## Thoroughness
+How thorough was the overall study? Were alternatives (e.g. different ways of processing the data or different models) considered? Were alternatives discussed? Were the questions/hypotheses fully and thoroughly addressed?
+
+### Feedback and Comments
+
+Yes, I found all i's dotted and t's crossed. 
+
+### Summary assessment
+
+* strong level of thorougness
+
+
+## Further comments
+
+I thought your project in general was very clear. You did a good job navigating a more nuanced data set and avoided working with any messy time series data (something I did not have the foresight to prevent). Great job, it was nice seeing such a good example. 
+
+
+
+
