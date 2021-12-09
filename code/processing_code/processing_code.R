@@ -439,7 +439,7 @@ garminRun$id <- paste(garminRun$date,garminRun$distance,sep="-")
 df_gs$id <- paste(df_gs$date,df_gs$distance,sep="-")
 
 #Remove variables that will become duplicated
-df_gs <- df_gs %>% select(-date,-distance)
+df_gs <- df_gs %>% select(-distance)
 
 garminRun1 <- left_join(garminRun,df_gs, by = "id")
 
@@ -449,7 +449,7 @@ garminRun1 <- garminRun1 %>% select(-activity_type, -title)
 pacman::p_load(fastDummies)
 
 # Create variables with binary data. 0 is alway "absent" or "no", 1 is always "present" or "yes".
-garminRun_bin <- garminRun1 %>% select(id, distance, calories,avg_hr,max_hr,avg_run_cadence,
+garminRun_bin <- garminRun1 %>% select(id, date.x, distance, calories,avg_hr,max_hr,avg_run_cadence,
                                        max_run_cadence,total_ascent,total_decent,avg_stride,min_elevation,
                                        max_elevation,avg_pace_sec,best_pace_sec,week,`sweat_loss(ml)`,
                                        aerobic_TE,aerobic_fct,anaerobic_value,anaerobic_fct,avg_spd,max_spd)
@@ -464,7 +464,15 @@ garminRun_bin$short_distance <- as.factor(ifelse(garminRun_bin$distance < 6.25, 
 garminRun_bin$middle_distance <- as.factor(ifelse(garminRun_bin$distance > 6.25 & garminRun_bin$distance < 12.05, "Y","N"))
 garminRun_bin$long_distance <- as.factor(ifelse(garminRun_bin$distance > 12.05, "Y","N"))
 
+# join RHR data to garmin dataset
+#drop weekday variable
+rhr <- rhr %>% select(-weekday)
 
+#join rhr with garminRun_bin data. Start by renaming "date" in garminRun_bin
+garminRun_bin <- garminRun_bin %>% rename("date" = "date.x")
+garmin_final <- left_join(garminRun_bin,rhr, by = "date")
+# finalize by dropping variables not used models
+garmin_final <- garmin_final %>% rename("rhr" = `rhr(bpm)`) %>% select(-id,-date,-`sweat_loss(ml)`,-week, -calories)
 
 #save checkpoint
-write_rds(garminRun_bin, here::here("data","processed_data","garmin_data.rds"))
+write_rds(garmin_final, here::here("data","processed_data","garmin_data.rds"))

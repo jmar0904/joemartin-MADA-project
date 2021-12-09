@@ -18,12 +18,14 @@ rhr_plot <- rhr %>% ggplot(aes(x=date, y=`rhr(bpm)`))+
   geom_smooth(method = "lm")
 
 rhr_plot
+ggsave(here::here("figures","rhr_plot.png"), device = "png", scale = 3)
 
 ### Average Pace ###
 average_pace_1321 <- run_df %>% ggplot(aes(x=date, y= avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
 average_pace_1321
+ggsave(here::here("figures","avg_pace_1321.png"), device = "png", scale = 3)
 
 # Average pace and temperature
 # temperature does not seem to affect pace as much as I thought it would
@@ -33,6 +35,7 @@ avg_pace_temp <- run_df %>% filter(avg_pace_sec < 750) %>%
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 avg_pace_temp
+ggsave(here::here("figures","avg_pace_temp.png"), device = "png", scale = 3)
 
 # Long Disance Runs
 ld <- run_df %>%
@@ -41,18 +44,20 @@ ld <- run_df %>%
   ggplot(aes(x=date,y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm")
-
 ld
+ggsave(here::here("figures","avg_p_ld.png"), device = "png", scale = 3)
 
 #### Investigate cadence and avg_pace ####
+
 # Effect of Cadence on Average Pace
 # Potentially strong relationship
 cad_ap <-garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
-
 cad_ap
+ggsave(here::here("figures","avg_pace_cadence.png"), device = "png", scale = 3)
+
 ####
 
 #### Investigate aerobicTE and avg_pace ####
@@ -62,6 +67,7 @@ ae_ap<- garminRun %>% ggplot(aes(x=aerobic_TE, y=avg_pace_sec))+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 ae_ap
+ggsave(here::here("figures","ae_ap.png"), device = "png", scale = 3)
 ####
 
 #### Investigate avg_hr and avg_pace ####
@@ -70,16 +76,19 @@ hr_ap <- garminRun %>% ggplot(aes(x=avg_hr, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
-
 hr_ap
+ggsave(here::here("figures","hr_ap.png"), device = "png", scale = 3)
 ####
 
 #### Investigate avg_pace and avg_stride ####
 # Stride and Average Pace - seems to have a very strong relationship
-garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
+st_ap <- garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
+st_ap
+ggsave(here::here("figures","st_ap.png"), device = "png", scale = 3)
+
 ####
 
 # Temperature
@@ -87,10 +96,12 @@ garminRun %>% ggplot(aes(x=avg_stride, y = avg_pace_sec))+
 fit1 <- lm(distance ~ temperature, run_df)
 summary(fit1)
 
-run_df %>% ggplot(aes(x=temperature, y = distance))+
+temp_dist <- run_df %>% ggplot(aes(x=temperature, y = distance))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
+temp_dist
+ggsave(here::here("figures","temp_dist.png"), device = "png", scale = 3)
 
 # Ascent
 #avg_hr, total_ascent
@@ -102,8 +113,8 @@ hr_ascent_plot <-garminRun %>% ggplot(aes(x=avg_hr, y = total_ascent))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
-
 hr_ascent_plot
+ggsave(here::here("figures","hr_ascent.png"), device = "png", scale = 3)
 ####
 
 #### Investigate aerobicTE and ascent ####
@@ -112,6 +123,7 @@ ae_ta <- garminRun %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 ae_ta
+ggsave(here::here("figures","ae_ta.png"), device = "png", scale = 3)
 ####
 
 cadence_aerobicTE <- lm(avg_run_cadence~aerobic_TE, garminRun)
@@ -123,6 +135,7 @@ ca_at <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=aerobic_TE))+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 ca_at
+ggsave(here::here("figures","ca_at.png"), device = "png", scale = 3)
 ####
 
 #### Investigate cadence and stride ####
@@ -131,18 +144,63 @@ stride <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=avg_stride))+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 stride
+ggsave(here::here("figures","stride.png"), device = "png", scale = 3)
 ####
+
+#### Resting Heart Rate ####
+# RHR and Average Pace
+rhr_ap <- garminRun %>% ggplot(aes(x=avg_pace_sec, y=rhr))+
+  geom_point()+
+  geom_smooth(method = "lm")
+rhr_ap
+ggsave(here::here("figures","rhr_ap.png"), device = "png", scale = 3)
+
+#RHR and cadence
+rhr_cad <- garminRun %>% ggplot(aes(x=avg_run_cadence, y=rhr))+
+  geom_point()+
+  geom_smooth(method="lm")
+rhr_cad
+ggsave(here::here("figures","rhr_cad.png"), device = "png", scale = 3)
+
+#RHR and Stride
+rhr_stride <- garminRun %>% ggplot(aes(x=avg_stride, y=rhr))+
+  geom_point()+
+  geom_smooth(method = "lm")
+rhr_stride
+ggsave(here::here("figures","rhr_stride.png"), device = "png", scale = 3)
+
+rhr_distance <- garminRun %>% ggplot(aes(x=distance, y=rhr))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  geom_smooth(color="red")
+rhr_distance
+ggsave(here::here("figures","rhr_dist.png"), device = "png", scale = 3)
+
+rhr_avg_hr <- garminRun %>% ggplot(aes(x=avg_hr, y=rhr))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  geom_smooth(color="red")
+rhr_avg_hr
+ggsave(here::here("figures","rhr_avghr.png"), device = "png", scale = 3)
+
+rhr_max_hr <- garminRun %>% ggplot(aes(x=max_hr, y=rhr))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  geom_smooth(color="red")
+rhr_max_hr
+ggsave(here::here("figures","rhr_maxhr"), device = "png", scale = 3)
+
 ### More Garmin Data ###
 # 10/25/2021 - I've scraped more data from my Garmin dashboard that, for some reason is unavailable in my exports
 # Inspiration for this was the Human Running Performance paper from Nature, which uses anaerobic value in their model
 # This also gave me access to speed variable (in mph) which I thought would be interesting to look at
 
-garminRun %>% ggplot(aes(x=avg_pace, y=anaerobic_value))+
+garminRun %>% ggplot(aes(x=avg_pace_sec, y=anaerobic_value))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 
-garminRun %>% ggplot(aes(x=avg_pace, y=aerobic_value))+
+garminRun %>% ggplot(aes(x=avg_pace_sec, y=aerobic_TE))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
@@ -155,26 +213,12 @@ garminRun %>% ggplot(aes(x=avg_spd, y=anaerobic_value))+
 ####
 
 #### Investigate avg_spd and aerobic TE ####
-garminRun %>% ggplot(aes(x=avg_spd, y=aerobic_value))+
+garminRun %>% ggplot(aes(x=avg_spd, y=aerobic_TE))+
   geom_point()+
   geom_smooth(method = "lm", color = "red")+
   geom_smooth(color = "blue")
 ####
 
-garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=anaerobic_value))+
-  geom_point()+
-  geom_smooth(method = "lm", color = "red")+
-  geom_smooth(color = "blue")
-
-#### Investigate sweat loss and aerobicTE
-garminRun %>% ggplot(aes(x=`sweat_loss(ml)`, y=aerobic_TE))+
-  geom_point()+
-  geom_smooth(method = "lm", color = "red")+
-  geom_smooth(color = "blue")
-####
-
-#### Heart Rate ####
-garminRun %>% ggplot(aes(x=))
 
 # Through this initial analysis, the most significant variables I've found so far are:
 # avg_pace
@@ -210,4 +254,3 @@ saveRDS(run_df, file = save_data_location) #clean data without NA dates
 
 # In future analysis, I'm curious to see how my shoes affect my stride and cadence (I think lighter, responsive shoes improve both)
 # I know my watch also has an anaerobic value. I wonder if that's available somewhere in my dataset. THat would be another important performance indicator
-

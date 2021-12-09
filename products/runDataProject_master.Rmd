@@ -9,7 +9,7 @@ pacman::p_load(tidyverse,tidymodels,here)
 
 run_journal <- readRDS(here::here("data","processed_data","run_data_clean.rds"))
 garmin <- readRDS(here::here("data","processed_data","garmin_data.rds"))
-rhr <- read_csv(here::here("data","raw_data", "dailyRHR.csv")
+rhr <- read_csv(here::here("data","raw_data", "dailyRHR.csv"))
 ```
 
 ## Part 1 - Background
@@ -50,11 +50,11 @@ The data sets available had more data and fields than necessary. The initial ste
 
 ## Part 2 - Data Cleaning and Exploration
 
-Instructions for reproducing my data cleaning and exploration process are in found in the readme.md file in the data folder. To reproduce code from Part 2 of this project, execute the script "mada_project_part2.R" located in "~code/processing_code". After executing this script, the figures below can be reproduced by executing the script "exploratory_analysis.R" in "~/code/analysis_code".
+Instructions for reproducing my data cleaning and exploration process are in found in the `readme.md` file in the data folder. To reproduce code from Part 2 of this project, execute the script `mada_project_part2.R` located in `~code/processing_code`. After executing this script, the figures below can be reproduced by executing the script `exploratory_analysis.R` in `~/code/analysis_code`.
 
 ### Data Cleaning
 
-This stage of my project began with loading my raw data directly from the Google sheets I use with the googlesheets4 package. This is mentioned in the notes of my script, but no longer visible. The googlesheets4 package gives the ability to write to a googlesheet, so I thought it could be risky if I potentially gave that ability to anyone accessing my GitHub. Files for years 2013-2021 were loaded and saved as .rds files before processing. I left a line of code commented out so I'm able to paste in my Google sheet for year 2021 and update data frequently. At this stage, I also imported data from my Garmin Connect account for all of my runs since April 2020, as well as my resting heart rate data.
+This stage of my project began with loading my raw data directly from the Google sheets I use with the `googlesheets4` package. This is mentioned in the notes of my script, but no longer visible. The `googlesheets4` package gives the ability to write to a googlesheet, so I thought it could be risky if I potentially gave that ability to anyone accessing my GitHub. Files for years 2013-2021 were loaded and saved as .rds files before processing. I left a line of code commented out so I'm able to paste in my Google sheet for year 2021 and update data frequently. At this stage, I also imported data from my Garmin Connect account for all of my runs since April 2020, as well as my resting heart rate data.
 
 Over the years, some variables mattered to me and others didn't, so I began cleaning by removing variables that no longer seem to serve a purpose or have a small amount of data during one period of time. 
 
@@ -62,16 +62,16 @@ Once I cleaned out the variables I didn't want, my data files had consistent col
 
 My plan moving into data analysis is to keep a separate dataframe for my run journal data (2013-present), my Garmin data, and my resting heart rate. When I want to work with variables across each set, I will join them together. 
 
-To complete my data cleaning, I coerced each variable into its necessary type. The most challenging variable has proven to be average pace. This is likely one of the most important variables in my set (if not <em>the</em> most important), so I may need to rethink how I'm using this variable going forward. I ultimately ended by coercing it, as well as best_pace in the Garmin data set, using as.POSIXct. This is not ideal because as.POSIXct also assigns a date value. However, this was good enough to begin analysis. 
-Following processing, clean datasets were saved as rds files in "~/data/processed_data". Notably, I saved two versions of my journal data - one set eliminates NAs for days I didn't run (1,202 observations), one of them retains them(more than 3,000 observations). The purpose of this was to retain notes I kept on days I did not run. 
+To complete my data cleaning, I coerced each variable into its necessary type. The most challenging variable has proven to be average pace. This is likely one of the most important variables in my set (if not <em>the</em> most important), so I may need to rethink how I'm using this variable going forward. I ultimately ended by coercing it, as well as best_pace in the Garmin data set, using `as.POSIXct()`. This is not ideal because `as.POSIXct()` also assigns a date value. However, this was good enough to begin analysis. 
+Following processing, clean datasets were saved as rds files in `~/data/processed_data`. Notably, I saved two versions of my journal data - one set eliminates NAs for days I didn't run (1,202 observations), one of them retains them (more than 3,000 observations). The purpose of this was to retain notes I kept on days I did not run. 
 
 ## Part 3 - Exploratory Analysis
 
-My exploratory analysis began primarily using the lm() function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, lm() does not support date data and time data, therefore, could not give me useful information about correlations. From this experience, I decided to change my average pace variable from hms format to seconds, measured as a numeric value.
+My exploratory analysis began primarily using the `lm()` function to see if any variables are highly correlated. I graphed these, as well, in order to better visualize this relationship. Unfortunately, `lm()` does not support date data and time data, therefore, could not give me useful information about correlations. From this experience, I decided to change my average pace variable from hms format to seconds, measured as a numeric value.
 
 I purposely chose variables I anticipated would have significant p-values. I wanted to understand which variables would be most important to my future analysis and modeling, especially if I can introduce new variables, like miles per week and shoes.
 
-The plots below were generated with the "exploratory_analysis.R" script.
+The plots below were generated with the `exploratory_analysis.R` script.
 
 ### Relationships
 
@@ -179,6 +179,7 @@ pace_ascent_plot <-garmin %>% ggplot(aes(x=avg_pace_sec, y = total_ascent))+
 
 pace_ascent_plot
 ```
+
 However, the Aerobic Training Effect variable shows that I improve my aerobic training when I run uphill.
 ```{r ae_ta}
 ae_ta <- garmin %>% ggplot(aes(x=aerobic_TE, y=total_ascent))+
@@ -265,7 +266,6 @@ pace_aug %>% select(avg_pace_sec, .pred)
 ```
 
 The R Mean-Squared Error for this model is 5.41. In other words, this model can predict average pace within 5.41 seconds.
-
 ```{r}
 pace_error <- pace_aug %>% 
   rmse(truth = avg_pace_sec, .pred)
@@ -273,7 +273,7 @@ pace_error <- pace_aug %>%
 pace_error
 ```
 
-These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use k-fold cross validation to enhance the quality of my training set. In this section, the random forest model will use k-fold cross validation and train with all variables.
+These analyses provide a good starting point for building a more complex model that can predict good performance. The possible next step is to use v-fold cross validation to enhance the quality of my training set. In this section, the random forest model will use k-fold cross validation and train with all variables.
 ```{r}
 pacman::p_load(tidymodels, ranger, parallel)
 
@@ -343,7 +343,6 @@ rf_rmse
 ```
 
 This model predicts average pace within 4.4 seconds. In an attempt to improve the accuracy, some variables will be eliminated. This model ran with 21 predictors. Thinking about the purpose of this model (predicting potential race pace), there are features in this dataset which might not be available before the race. For example, speed would be related to the target (average pace) and not necessarily available as a predictor. The same goes for sweat loss. Therefore, these features will be removed. 
-
 ```{r}
 set.seed(456)
 
@@ -478,7 +477,6 @@ rf_rmse
 ```
 
 This final Random Forest model has a greater RMSE value than the previous one. One of the concerns with the dataset is the greater number of features (21 total predictors avialable). LASSO may be a good option to automate feature selection. 
-
 ```{r}
 set.seed(456)
 # Split data into training and testing sets
