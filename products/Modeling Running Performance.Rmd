@@ -223,6 +223,10 @@ rf_res2 <- rf_wf2 %>%
 rf_res2 %>%
   show_best(metric = "rmse")
 
+rf_res2_table <- rf_res2 %>%
+  show_best(metric = "rmse") 
+saveRDS(rf_res2_table, here::here("figures","rf_res2_table.Rds"))
+
 rf_res2_plot <- autoplot(rf_res2)
 ggsave(here::here("figures","random_forest_res2_plot.png"), device = "png", scale = 3)
 ```
@@ -268,7 +272,7 @@ rf_rmse2
 
 Tune parameters. mtry = 22, min_n = 3
 ```{r}
-tuned_rf2 <- rand_forest(mtry = 22, min_n = 2, trees = 1000) %>%
+tuned_rf2 <- rand_forest(mtry = 22, min_n = 3, trees = 1000) %>%
   set_engine("ranger", num.threads = cores, importance = "impurity") %>%
   set_mode("regression")
 
@@ -279,7 +283,8 @@ tuned_rf_fit2 <- tuned_wf2 %>%
   last_fit(df_split2)
 tuned_rf_fit2
 
-tuned_rf_fit2 %>% collect_metrics()
+rf2_fit_table <- tuned_rf_fit2 %>% collect_metrics()
+saveRDS(rf2_fit_table, here::here("figures","rf2_fit_table.Rds"))
 ```
 
 ```{r}
@@ -347,8 +352,12 @@ rf_res3 <- rf_wf3 %>%
 ```
 
 ```{r}
-rf_res3 %>%
+rf_res3_table <- rf_res3 %>%
   show_best(metric = "rmse")
+rf_res3_table
+
+saveRDS(rf_res3_table, here::here("figures","rf_res3_table.Rds"))
+
 
 rf_res3_plot <- autoplot(rf_res3)
 ggsave(here::here("figures","random_forest_res3_plot.png"), device = "png", scale = 3)
@@ -380,7 +389,9 @@ final_rf_wf3 <- rf_wf3 %>%
 final_fit_rf3 <- final_rf_wf3 %>%
   last_fit(final_split)
 
-final_fit_rf3 %>% collect_metrics()
+rf3_fit_table <- final_fit_rf3 %>% collect_metrics()
+rf3_fit_table
+saveRDS(rf3_fit_table, here::here("figures", "rf3_fit_table.Rds"))
 
 rf_rmse3 <- 
   final_fit_rf3 %>%
@@ -403,7 +414,8 @@ tuned_rf_fit3 <- tuned_wf3 %>%
   last_fit(final_split)
 tuned_rf_fit3
 
-tuned_rf_fit3 %>% collect_metrics()
+tuned_rf3_fit_table <- tuned_rf_fit3 %>% collect_metrics()
+saveRDS(tuned_rf3_fit_table, here::here("figures","tuned_rf3_fit_table.Rds"))
 ```
 
 ```{r}
@@ -518,6 +530,7 @@ lasso_grid_plot <- lasso_grid %>%
   facet_wrap(~.metric, scales = "free", nrow = 2) +
   scale_x_log10()
 lasso_grid_plot
+ggsave(here::here("figures","lasso_grid_plot.png"), device = "png", scale = 3)
 ```
 
 ```{r}
@@ -531,7 +544,7 @@ final_lasso <- finalize_workflow(lasso_wkfl %>%
 pacman::p_load(vip)
 
 #train best model
-final_lasso %>%
+lasso_vi <- final_lasso %>%
   fit(train_fin) %>%
   pull_workflow_fit() %>%
   vi(lambda = low_rmse$penalty) %>%
@@ -539,14 +552,17 @@ final_lasso %>%
          Variable = fct_reorder(Variable, Importance)) %>%
   ggplot(aes(x = Importance, y = Variable, fill = Sign))+
   geom_col()
-  
+lasso_vi
+ggsave(here::here("figures","lasso_vi.png"), device = "png", scale = 3)
 
 ```
 
 ```{r}
-last_fit(final_lasso,
+lasso_fit_table <- last_fit(final_lasso,
          final_split) %>%
   collect_metrics()
+lasso_fit_table
+saveRDS(lasso_fit_table, here::here("figures","lasso_fit_table.png"))
 ```
 After creating a grid for this LASSO model, I found that my RMSE actually did worse. I want it to be under 5, but this resulted in a value greater than 10. The other important lesson learned with this model is that most of the variables with high importance have negative importance values. This means these variables could be irrelevant, or it could mean that my model is underfitting based on these variables. Since LASSO models are used to regularize, I'm going to try another model to see if I can improve my results. Since I had better luck with my random forest, I'm going to return to that and follow a different process laid out by Julia Silge in this tidy tuesday: https://juliasilge.com/blog/intro-tidymodels/. The difference with this model is that I previously used `glmnet` as my model engine. I'm planning now to use `lm` and follow Silge's steps for building a random forest.
 
@@ -640,7 +656,7 @@ results_test %>%
   bind_rows(results_train %>%
     mutate(train = "training")) %>%
   ggplot(aes(truth, .pred, color = model)) +
-  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_abline() +
   geom_point(alpha = 0.5) +
   facet_wrap(~train) +
   labs(
@@ -729,7 +745,7 @@ pace_aug_fin <- augment(pace_fit_fin, testing_fin)
 pace_aug_fin %>% select(avg_pace_sec, .pred)
 ```
 
-This model did not perform as well as I had hoped. Removing the average speed variable dramatically changes how the model behaves. The best model, therefore, is the tuned random forest. This is the model I will initially deploy. 
+This model did not perform as well as I had hoped. Removing the average speed variable dramatically changes how the model behaves. The best model, therefore, is the tuned random forest. This is the model I will deploy. 
 
 ```{r}
 pace_error_fin <- pace_aug_fin %>% 
