@@ -1,12 +1,12 @@
 ### Processed Data
 
-#### Data Dictionary
-Please review the data dictionary file in the processed_data folder for more information about the final dataset.
+Please review the data dictionary (`garmin_data_dictionary.md`) file in the processed_data folder for more information about the final dataset.
 
 `garmin_data.rds` consists of data joined from the Garmin Connect export and Garmin Connect website scrape in the processing script. This data source will be the primary source for this project and perhaps the only source moving forward.
 
-resting_heart_rate.rds consists of date and resting heart rate in beats per minute. Exported from Garmin Connect. 
-run_data_complete.rds contains every date from Jan 1, 2013 through Dec 31, 2021 with NA values where there was no activity. `run_data_clean.rds` is the same data without the NA values.
+`resting_heart_rate.rds` consists of date and resting heart rate in beats per minute. Exported from Garmin Connect. 
+
+`run_data_complete.rds` contains every date from Jan 1, 2013 through Dec 31, 2021 with NA values where there was no activity. `run_data_clean.rds` is the same data without the NA values.
 
 ### Raw Data
 

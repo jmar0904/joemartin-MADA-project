@@ -4,7 +4,7 @@ Last updated 12 December 2021
 
 ### Instructions
 
-To fully reproduce this project, only the files in the code folder are needed. Run them in this order to test all code:
+To fully reproduce this project, only the files in the code folder and the manuscript are needed. Run them in this order to test all code:
 
 1) `code/processing_code/processing_code.R` - This is the data processing file. All necessary data files will load into here and produce the final, clean dataset. 
 
@@ -12,7 +12,7 @@ To fully reproduce this project, only the files in the code folder are needed. R
 
 3) `code/analysis_code/modeling_performance.Rmd` - This markdown file is where all of the modeling occurred. 
 
-4) `products/Manuscript/predicting_run_performance_final.Rmd` - Knit this markdown to view the final paper.
+4) `manuscript/predicting_run_performance_final.Rmd` - Knit this markdown to view the final paper.
 
 All other files in this repository are supplementary. Some files, like the Garmin Connect scraping script in the supplementary folder are not fully reproducible, but provide instructions for anyone wanting to explore scraping with RSelenium.
 
