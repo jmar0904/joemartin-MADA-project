@@ -1,25 +1,24 @@
 ## MADA Project
 
-Last updated 26 November 2021
-* Rmd file `runDataProject_part1` was renamed to `runDataProject_master.Rmd` Future results and deliverables will be published in this document until the final version is complete.
+Last updated 12 December 2021
 
 ### Instructions
 
-To fully reproduce this project, just a few of the available files are needed. Run them in this order to test all code:
+To fully reproduce this project, only the files in the code folder are needed. Run them in this order to test all code:
 
-1) `code/processing_code/mada_project_part2.R` - This is the data processing file. All necessary data files will load into here and produce the final, clean dataset. 
+1) `code/processing_code/processing_code.R` - This is the data processing file. All necessary data files will load into here and produce the final, clean dataset. 
 
-2) `code/analysis_code/exploratory_analysis.R`
+2) `code/analysis_code/exploratory_analysis.R` - This file produces many of the figures used in the final paper
 
-3) `products/runDataProject_master.Rmd`
+3) `code/analysis_code/modeling_performance.Rmd` - This markdown file is where all of the modeling occurred. 
 
-All other files in this repository are supplementary. The file `code/processing_code/garminConnectScrape.R` is not fully reproducible, but included as a supplement to show how I scraped data from my Garmin account. The markdown file and associated pdf and html files named `products/Modeling Running Performance.Rmd` are fully reproducible, but were used to explore different models for this master file.
+4) `products/Manuscript/predicting_run_performance_final.Rmd` - Knit this markdown to view the final paper.
+
+All other files in this repository are supplementary. Some files, like the Garmin Connect scraping script in the supplementary folder are not fully reproducible, but provide instructions for anyone wanting to explore scraping with RSelenium.
 
 ### Part 1 - Background and dataset
 
-Part 1 of my MADA project contains data files for 2020, 2021, and my daily resting heart rate. Previous versions included more data that went further back in time. After attempting my initial models, these were eliminated becuase they lacked the features I was interested in.
-
-R Markdown file answers questions outlined on MADA website: https://andreashandel.github.io/MADAcourse/Project_Rubric.html
+Part 1 of my MADA project contains data files for 2020, 2021, and my daily resting heart rate. Previous versions included more data that went further back in time. After attempting my initial models, these were eliminated because they lacked the features I was interested in.
 
 ### Part 2 - Data Processing
 
@@ -29,10 +28,7 @@ This part focuses on cleaning my Google sheets and scraped data. For the purpose
 
 The main takeaway from this part of my project is that I have several variables that seem have strong correlations. The most immediately useful correlations to me are in stride and average pace, as well as cadence and average pace. At this part of the project, I determined that Average Pace (recorded in seconds), will be the target variable in my models.
 
-
 ### Part 3 - Preliminary Data Analysis
-
-Part 3 of this project focuses primarily on the data set exported and scraped from Garmin Connect. Part 2 of this project was updated to add new variables (speed in mph, anaerobic training effect, and associated binary variables) to aid in building linear regression and logistic regression models. 
 
 The file `Modeling Running Performance.Rmd` contains preliminary modeling results from the available Garmin data. The most relevant results from this document were added to the `runDataProject_master.Rmd` file. 
 
@@ -42,7 +38,7 @@ The data analysis in Part 3 focuses primarily on identifying the most relevant v
 
 Part 4 of this project primarily focuses on testing different statistical models on the Garmin data. In part 3, average pace and aerobic training effect. I landed on average pace as my final target variable, with the long-term idea of predicting a realistic pace based on training conditions. 
 
-Setting up these models, the assumption was that a random forest would provide strong prediction power. After trying several models, I realized that my data set has many features (more than 20). I finally landed on using a LASSO regression to select relevant predictors for me, resulting in an improved RMSE. 
+I tried many iterations of different models, including 2 general linear regressions, a few random forests, and a LASSO regression. 
 
 ### Part 5 - Clean-up
 
@@ -51,6 +47,3 @@ This part of my project focused on cleaning and organizing the whole repository,
 ### Part 6 - Final Updates
 
 This part of my project focused on completing the project - tying up loose ends, revising sections based on peer feedback, and creating a better manuscript. 
-
-Updates: 
-- `mada_project_part2.R` was renamed to `processing_script.R` for clarity.

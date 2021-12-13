@@ -201,7 +201,8 @@ rf_rec2 <- recipe(avg_pace_sec ~ ., data = train_df2) %>%
 
 folds <- vfold_cv(train_df2, v = 10, repeats = 5, strata = avg_pace_sec)
 
-summary(rf_rec2)
+variable_summary <- summary(rf_rec2)
+saveRDS(variable_summary, here::here("figures", "variable_summary.Rds"))
 ```
 
 ```{r}
@@ -246,9 +247,10 @@ rf_res2 %>% collect_predictions %>%
   geom_point(alpha = .3)+
   geom_abline()+
   theme_classic()+
+  theme(legend.title = element_blank())+
   labs(x = "Truth",
        y = "Predicted Average Pace")
-ggsave(here::here("figures","predictions_rand_forest2.png"), device = "png", scale = 1.5)
+ggsave(here::here("figures","train_rand_forest2.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}

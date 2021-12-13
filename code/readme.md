@@ -1,16 +1,8 @@
 #### Instructions
-8 October 2021
+12 December 2021
 
-In order to reproduce this project, begin by running the script "mada_project_part2.R", located in "~code/processing_code". The output from this script are four clean data sets which will be used for analysis. 
+Processing code includes data that is not used in the final project. However, since I already wrote code to clean that data and had it mixed in with my code used to clean my primary data source, I left it in and will keep some results in a supplementary folder.
 
-An exploratory analysis named "exploratory_analysis.R" is located in "~/code/analysis_code". This file produces several preliminary figures that explore the clean datasets.
+In order to reproduce this project, begin in the processing_code folder and run the R script in there. Then, run the `exploratory_analysis.R` script, followed by `modeling_performance.Rmd`. 
 
-Later analyses will be saved in the analysis_code folder and shared in the master project document. 
-
-29 October 2021
-
-"mada_project_part2.R" was updated to resolve issues with reproducibility. New coded added introduces new data scraped from Garmin Connect and joined to the main Garmin Connect export data. 
-
-garminConnectScrape.R may not be reproducible for all users. It requires a Garmin Connect account and data. Instructions for starting a remote driver with Selenium are included. End of script contains some of the data cleaning done to the raw data.
-
-Binary variables generated to describe distance of run (short,middle,long).
+Resulting figures from the exploratory analysis script will go to the `figures` folder and will be used in the final manuscript. 
