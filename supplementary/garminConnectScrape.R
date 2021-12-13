@@ -1,6 +1,8 @@
 #########################################################
-# This script isn't reproducible without a bit of work. In addition to the instructions below, it requires access to a Garmin Connect account.
-## To try running the script, please use the instructions. They are required in addition to the RSelenium package. 
+# This script isn't reproducible without considerable work. 
+# In addition to the instructions below, it requires access to a Garmin Connect account.
+## To try running the script, please use the following instructions. 
+## They are required in addition to the RSelenium package. 
 #########################################################
 
 # Instructions for reproducing Selenium scrape
@@ -50,10 +52,10 @@ remDr$navigate("https://sso.garmin.com/sso/signin?service=https%3A%2F%2Fconnect.
 # Select username and password fields. Enter username/pw
 
 username_input <- remDr$findElement(using = "id", value = "username")
-username_input$sendKeysToElement(list("------------"))
+username_input$sendKeysToElement(list("")) #Input username
 
 pw_input <- remDr$findElement(using = "id", value = "password")
-pw_input$sendKeysToElement(list("----------"))
+pw_input$sendKeysToElement(list("")) #Input Password
 
 submit <- remDr$findElement(using = "class", value = "btn1")
 submit$clickElement()

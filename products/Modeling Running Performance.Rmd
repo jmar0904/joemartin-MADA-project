@@ -176,6 +176,7 @@ tuned_rf_fit %>%
   pluck(".workflow", 1) %>%
   extract_fit_parsnip() %>%
   vip(num_features = 21)
+ggsave(here::here("figures","vi.png"), device = "png", scale = 1.5)
 ```
 Reviewing these relevance of each variable, it seems that the variable with the greatest impact is average speed (avg_spd). When building the model, the `importance = "impurity"` argument sets the importance measurement to variance by default for regression models. This figure is problematic because it the avg_spd variable may constitute data leakage. Technically, this value is not known until the conclusion of a run and it is directly related to the target variable. The model should be re-run without avg_spd. 
 
@@ -228,7 +229,7 @@ rf_res2_table <- rf_res2 %>%
 saveRDS(rf_res2_table, here::here("figures","rf_res2_table.Rds"))
 
 rf_res2_plot <- autoplot(rf_res2)
-ggsave(here::here("figures","random_forest_res2_plot.png"), device = "png", scale = 3)
+ggsave(here::here("figures","random_forest_res2_plot.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -247,7 +248,7 @@ rf_res2 %>% collect_predictions %>%
   theme_classic()+
   labs(x = "Truth",
        y = "Predicted Average Pace")
-ggsave(here::here("figures","predictions_rand_forest2.png"), device = "png", scale = 3)
+ggsave(here::here("figures","predictions_rand_forest2.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -299,7 +300,7 @@ tuned_rf_fit2 %>%
     x = "Truth",
     y = "Predicted Average Pace"
   )
-ggsave(here::here("figures","random_forest_predictions2.png"), device = "png", scale = 3)
+ggsave(here::here("figures","random_forest_predictions2.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -360,7 +361,7 @@ saveRDS(rf_res3_table, here::here("figures","rf_res3_table.Rds"))
 
 
 rf_res3_plot <- autoplot(rf_res3)
-ggsave(here::here("figures","random_forest_res3_plot.png"), device = "png", scale = 3)
+ggsave(here::here("figures","random_forest_res3_plot.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -379,7 +380,7 @@ rf_res3 %>% collect_predictions %>%
   theme_classic()+
   labs(x = "Truth",
        y = "Predicted Average Pace")
-ggsave(here::here("figures","predictions_rand_forest3.png"), device = "png", scale = 3)
+ggsave(here::here("figures","predictions_rand_forest3.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -430,7 +431,7 @@ tuned_rf_fit3 %>%
     x = "Truth",
     y = "Predicted Average Pace"
   )
-ggsave(here::here("figures","random_forest_predictions3.png"), device = "png", scale = 3)
+ggsave(here::here("figures","random_forest_predictions3.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -530,7 +531,7 @@ lasso_grid_plot <- lasso_grid %>%
   facet_wrap(~.metric, scales = "free", nrow = 2) +
   scale_x_log10()
 lasso_grid_plot
-ggsave(here::here("figures","lasso_grid_plot.png"), device = "png", scale = 3)
+ggsave(here::here("figures","lasso_grid_plot.png"), device = "png", scale = 1.5)
 ```
 
 ```{r}
@@ -553,7 +554,7 @@ lasso_vi <- final_lasso %>%
   ggplot(aes(x = Importance, y = Variable, fill = Sign))+
   geom_col()
 lasso_vi
-ggsave(here::here("figures","lasso_vi.png"), device = "png", scale = 3)
+ggsave(here::here("figures","lasso_vi.png"), device = "png", scale = 1.5)
 
 ```
 
@@ -752,4 +753,5 @@ pace_error_fin <- pace_aug_fin %>%
   rmse(truth = avg_pace_sec, .pred)
 
 pace_error_fin
+saveRDS(pace_error_fin, here::here("figures","rmse_linear_reg.Rds"))
 ```
