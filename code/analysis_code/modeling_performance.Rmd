@@ -178,6 +178,7 @@ tuned_rf_fit %>%
   vip(num_features = 21)
 ggsave(here::here("figures","vi.png"), device = "png", scale = 1.5)
 ```
+
 Reviewing these relevance of each variable, it seems that the variable with the greatest impact is average speed (avg_spd). When building the model, the `importance = "impurity"` argument sets the importance measurement to variance by default for regression models. This figure is problematic because it the avg_spd variable may constitute data leakage. Technically, this value is not known until the conclusion of a run and it is directly related to the target variable. The model should be re-run without avg_spd. 
 
 ```{r}
@@ -442,6 +443,7 @@ tuned_rf_fit3 %>%
   extract_fit_parsnip() %>%
   vip(num_features = 21)
 ```
+
 The least-important features did have an impact on the quality of the model. Therefore, the initial random forest will be selected out of the initial few models. 
 
 The RMSE for this model is still not as good as I had hoped, but this shows a clearer picture of which variables are most important. It seems that many of the variables have little affect on the model. With the relatively large number of variables in this model, a LASSO regression may be a good option to automate feature selection. 
@@ -500,7 +502,6 @@ lasso_fit %>%
 # pick the penalty value with resampling and tuning
 # when running models, I keep getting the warning "! Bootstrap11: preprocessor 1/1, model 1/1 (predictions): prediction from a rank-deficient fit may be misleading"
 # Upon further research, it seems that I need to remove variables for this to work well. I'm going to get rid of the least important variables based on the previous table. 
-
 
 set.seed(456)
 garmin_boot <- bootstraps(train_fin, strata = avg_pace_sec)
@@ -567,6 +568,7 @@ lasso_fit_table <- last_fit(final_lasso,
 lasso_fit_table
 saveRDS(lasso_fit_table, here::here("figures","lasso_fit_table.png"))
 ```
+
 After creating a grid for this LASSO model, I found that my RMSE actually did worse. I want it to be under 5, but this resulted in a value greater than 10. The other important lesson learned with this model is that most of the variables with high importance have negative importance values. This means these variables could be irrelevant, or it could mean that my model is underfitting based on these variables. Since LASSO models are used to regularize, I'm going to try another model to see if I can improve my results. Since I had better luck with my random forest, I'm going to return to that and follow a different process laid out by Julia Silge in this tidy tuesday: https://juliasilge.com/blog/intro-tidymodels/. The difference with this model is that I previously used `glmnet` as my model engine. I'm planning now to use `lm` and follow Silge's steps for building a random forest.
 
 ```{r}
@@ -712,8 +714,8 @@ rf_res %>%
   )
 
 ```
-As it turns out, the best model built so far was the simple regression. This, however, contained the average speed variable I eliminated because I think it causes data leakage. Therefore, I'm going to try rebuilding this model to see if I can continue to get good results with a linear regression. 
 
+Running the simple linear regression with 10 predictors
 ```{r}
 set.seed(456)
 # use final split (final_split, train_fin, testing_fin)
@@ -747,8 +749,6 @@ pace_aug_fin <- augment(pace_fit_fin, testing_fin)
 
 pace_aug_fin %>% select(avg_pace_sec, .pred)
 ```
-
-This model did not perform as well as I had hoped. Removing the average speed variable dramatically changes how the model behaves. The best model, therefore, is the tuned random forest. This is the model I will deploy. 
 
 ```{r}
 pace_error_fin <- pace_aug_fin %>% 

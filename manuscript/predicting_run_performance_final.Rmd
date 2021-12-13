@@ -12,7 +12,7 @@ output:
   bookdown::html_document2: 
     toc: false
 ---
-Through the past several decades, analytics have become increasingly important across all sports and at all levels, from high school recruitment, to professional play, to amateurs using devices to track fitness. With greater accessibility to smart devices that accurately record biometric and GPS data, all athletes have the opportunity to utilize analytics to enhance their performance. This paper investigates how individuals can utilize data from smart devices to predict average pace while training for road races of any distance, including marathons and half-marathons. Having the ability to accurately predict average pace gives runners the opportunity to tune their performance and tailor their training plans.
+Through the past several decades, analytics have become increasingly important across all sports and at all levels, from high school recruitment to professional play. This even extends to amateurs using devices to track fitness. With greater accessibility to smart devices that accurately record biometric and GPS data, all athletes have the opportunity to utilize analytics to enhance their performance. This paper investigates how individuals can utilize data from smart devices to predict average pace while training for road races of any distance, like marathons and half-marathons. Having the ability to accurately predict average pace gives runners the opportunity to tune their performance and tailor their training plans.
 
 # Introduction 
 
@@ -20,19 +20,19 @@ Through the past several decades, analytics have become increasingly important a
 
 Marathon and distance running requires a special amount of detail and planning for athletes to achieve their goals - whether it's completing their first race or achieving a new personal best. With smart watches becoming more accessible to athletes of all abilities, everyone now has access to a constant stream of data they couldn't imagine having in the past, including an accurate average pace, heart rate, and even measurements like stride length for individual activities. 
 
-The goal of this project is to create a model which can take in variables from recent activities and predict a potential race time - as in, if I were to run a marathon today, under certain conditions, how would I perform? The goal of this project is to create a proof-of-concept model which, when deployed, can take in variables from the user and predict their average pace. 
+The goal of this project is to create a model which can take in variables from recent activities and predict a potential race time - as in, if I were to run a marathon today, how would I perform? The goal of this project is to create a proof-of-concept model which, when deployed, can take in variables from the user and predict their average pace. 
 
-As an additional benchmark, it is ideal to limit error as much as possible. This is important because average pace can be easily affected by small changes in time. For example, if an athlete runs a marathon at a 7:00 pace, their final race time is 3:03:32. If an athlete runs a race at a 7:05 pace, their final race time is 3:05:43. While this doesn't seem like much of a difference, this could easily be the difference between comfortably earning a good qualifying time for a future race and missing the qualifying time for the same race.
+As an additional benchmark, it is ideal to limit error as much as possible. This is important because average pace can be easily affected by small changes in time. For example, if an athlete runs a marathon at a 7:00 pace, their final race time is 3:03:32. If another athlete runs a race at a 7:05 pace, their final race time is 3:05:43. While this doesn't seem like much of a difference, this could easily be the difference between comfortably earning a good qualifying time for a future race and missing the qualifying time for the same race.
 
-Therefore, the goal for this project is to limit error to be within 5 seconds of the true average pace.
+Therefore, the goal for this project is to limit error as much as possible - preferrably to be within 5 seconds of the true average pace.
 
 ## Description of data and data source
 
-The data used for this model comes from my Garmin Forerunner 245 and run journal. The final data set contains 417 observations and more than 20 variables. Variables include date, distance, weather (temperature and conditions), total ascent, total descent, min elevation, max elevation, cadence, average stride length, and average pace. Much of this data is replicated in my running journal. While my running journal isn't included in the model, it was used in my data exploration and pieces of it were joined with my final model set. 
+The data used for this model comes from my Garmin Forerunner 245 and run journal. The final data set contains 417 observations and more than 20 variables. Variables include date, distance, weather (temperature and conditions), total ascent, total descent, min elevation, max elevation, cadence, average stride length, and average pace. Much of this data is replicated in my running journal. While my running journal isn't included in the model, it was used in my data exploration. 
 
 ## Questions/Hypotheses to be addressed
 
-Investigate whether it is possible to predict average pace with low error (within 5 seconds).
+Investigate whether it is possible to predict average pace with low error (within 5 seconds) using data recorded from a smart watch.
 
 # Methods 
 
@@ -43,16 +43,16 @@ All data used in this project comes from Garmin, but was obtained in two ways. G
 In addition to all Garmin data, some variables from my running journal were included. These include temperature and weather conditions. As noted previously, much of this data was processed in anticipation of using it for this project. However, there were too few features to include this data in statistical models, so while it appears in my processing script and exploratory analysis, it was not utilized further. 
 
 ## Data import and cleaning
-
-In order to import and clean my data, I simply used `read_csv`for my main Garmin file. In order to import my training journal data, I used the `googlesheets4` package to add data to my processing script, then saved these imports as `.Rds` files in order to keep my Google account secure. Much of this data was already relatively clean and in tidy format. Major changes to this data involved removing variables I knew I would not use, like variables captured by my watch during swims or bike rides. Otherwise, I took care to ensure all data were coerced to the proper type.
+ 
+In order to import and clean my data, I simply used `read_csv` for my main Garmin file. In order to import my training journal data, I used the `googlesheets4` package to add data to my processing script, then saved these imports as `.Rds` files to keep my Google account secure. Much of this data was already relatively clean and in tidy format. Major changes to this data involved removing variables I knew I would not use, like variables captured by my watch during swims or bike rides. Otherwise, I took care to ensure all data were coerced to the proper type.
 
 ### Data Preparation
 
-Perhaps the biggest consideration I needed to make during data preparation was how to format my average pace variable, as well as other time variables. After much testing and consideration, I ultimately converted my average pace to be a double with the precise number of seconds. For example, instead of showing a 6:30/mile average pace, my dataset will show an average pace of 390 seconds per mile. Too many errors were occuring when formatting this values with `lubridate` and base functions like `as.POSIXct()` for this value to be useful in modeling if it were in mm:ss format. Since average pace is the target variable for modeling, it was important to have this in a consistent, accessible format. 
+Perhaps the biggest consideration I needed to make during data preparation was how to format my average pace variable, as well as other time variables. After much testing and consideration, I ultimately converted my average pace to be a numeric value with the precise number of seconds. For example, instead of showing a 6:30/mile average pace, my dataset will show an average pace of 390 seconds per mile. Too many errors were occuring when formatting this values with `lubridate` and base functions like `as.POSIXct()` for this value to be useful in modeling if it were in `mm:ss` format. Since average pace is the target variable for modeling, it was important to have this in a consistent, accessible format. 
 
 ### Exploratory Analysis
 
-My exploratory analysis began with analyzing ordinary least squares (OLS) using the `lm()` function to see if any variables were correlated. I graphed these relationships, as well, in order to better visualize this relationship. With average pace as my target variable, I focused on plotting variables in relation to it. As expected, average heart rate, cadence, and aerobic training effect had strong relationships with average pace. Average Speed also had a particularly strong relationship with average pace. However, this variable was eliminated due to its potential to cause data leakage.  
+My exploratory analysis began with analyzing ordinary least squares (OLS) using the `lm()` function to see if any variables were correlated. I graphed these relationships, as well, in order to better visualize this relationship. With average pace as my target variable, I focused on plotting variables in relation to it. As expected, average heart rate, cadence, and aerobic training effect had strong relationships with average pace. Average speed also had a particularly strong relationship with average pace. However, this variable was eliminated due to its potential to cause data leakage. Figures 2.1 through 2.5 show these relationships.  
 
 ```{r fig.cap='Average Speed is clearly related strongly with average pace. However, since this variable is so closely related and serves almost the same purpose as average pace in measuring running speed, it should not be used for modeling.', echo = FALSE}
 knitr::include_graphics(here::here("figures","avg_pace_avg_spd.png"))
@@ -84,10 +84,9 @@ knitr::include_graphics(here::here("figures","avg_pace_cadence.png"))
 
 ## Statistical analysis
 
-### Initial Process
-The goal of this project is to investigate whether data from a smart watch can be used to predict average pace. More specifically, the objective is to predict average pace within 5 seconds. Therefore, the target variable is average pace. In order to begin statistical modeling, OLS regression was used to review strong relationships between average pace and all predictor variables. This yielded the same results as the exploratory analysis. Average heart rate, average cadence, average stride, and Aerobic TE had the strongest relationships, as demonstrated by their p-values. 
+### Early Models
 
-The `tidymodels` framework was used in order to conduct all statistical analyses. While the first model I produced was a simple linear regression with an R Mean-Squared Error (RMSE) value less than 5. However, when I tried improving this performance with a random forest, I realized I had used the average speed variable in my analysis. Using the `vi` function from the `vip` package, I was able to determine the average speed variable had the highest importance and that it likely had too much influence on my model. 
+The `tidymodels` framework was used in order to conduct all statistical analyses. The first model I produced was a simple linear regression with an R Mean-Squared Error (RMSE) value less than 5. However, when I tried improving this performance with a random forest, I realized I had used the average speed variable in my analysis. Using the `vi` function from the `vip` package, I was able to determine the average speed variable had the highest importance and that it likely had too much influence on my model. 
 
 After this adjustment, I began with a simple linear regression with the `lm` engine. Initial results yielded an estimated R Mean-Squared Error of 9.6, which fails the target of 5. However, this seemed to be a good starting point for building a random forest and to use v-fold cross-validation to improve results. 
 
@@ -104,7 +103,7 @@ final_var <- readRDS(here::here("figures","variable_summary.Rds"))
 knitr::kable(final_var, caption = "Variables used in final model")
 ```
 
-The final model adopted for this project was a random forest which used 1000 decision trees, as well as 10-fold cross-validation. This resulted in a final RMSE value of 6.4. While this doesn't meet the predefined benchmark of less than 5, this seems to be the best value achieved for a model that processes within a reasonable amount of time.   
+The final model adopted for this project was a random forest which used 1000 decision trees, as well as 10-fold cross-validation. This resulted in a final RMSE value of 6.4. While this doesn't meet the predefined benchmark of an RMSE value less than 5, this seems to be the best value achieved for a model that processes within a reasonable amount of time.   
 
 ```{r fig.cap="This busy figure shows how this model trained. Each color represents which fold a prediction came from. Each point corresponds to the true value on the x-axis and the predicted value on the y-axis. This plot seems ot show that my model predicted faster paces to be slower than they were, and slower paces to be faster than they were.", echo = FALSE}
 knitr::include_graphics(here::here("figures", "train_rand_forest2.png"))
@@ -120,13 +119,13 @@ knitr::kable(rf2_result_table, caption = "Random Forest Results")
 ```
 
 ## Other Models
-Several more models were built during this project, including several random forests and a LASSO regression. However, these models were primarily used to better explore my data and tune my final models. More information about these models can be found in the supplementary material. 
+Several more models were built during this project, including several random forests and a LASSO regression. However, these models were primarily used to better explore my data and tune my final models. More information about these models can be found in the `modeling_performance.Rmd` file. 
 
 # Discussion
 
 ## Summary and Interpretation
 
-In this project, I used data from a common smart watch to predict average pace for a run. The objective was to predict pace with an RMSE of 5 or less. While this was not accomplished, the final model was able to predict average pace with an RMS of about 6.4. Having the ability to predict average pace provides another useful data point for athletes in training - it gives a general sense of current race conditioning and current fitness. This model processes quickly enough that it can be used frequently with new data to provide updated information about how an athlete could perform in a 1-mile race, a 5k race, or a marathon on any given day. Such a data point provides good information for benchmarking in training plans, as well as planning and modifying activities to meet a goal. 
+In this project, I used data from a common smart watch to predict average pace for a run. The objective was to predict pace with an RMSE of 5 or less. While this was not accomplished, the final model was able to predict average pace with an RMS of about 6.4. Having the ability to predict average pace provides another useful data point for athletes in training - it gives a general sense of current race conditioning and current fitness. This model processes quickly enough that it can be used frequently with new data to provide updated information about how an athlete could perform in a 1-mile race, a 5k race, or a marathon on any given day. Such a data point provides good information for benchmarking in training plans, as well as planning and modifying activities to meet a time goal. 
 
 
 ## Strengths and Limitations
@@ -144,4 +143,4 @@ I think my model would function even better with more observations. Coming into 
 
 # Conclusion
 
-Average pace can be predicted accurately given the right variables. While my project was unsuccessful in meeting my self-imposed benchmark (RMSE < 5), it serves as a proof-of-concept for building predictive models for distance running. The best way to enhance such a model would be to add more data and verify whether features bring value to the resulting model. 
+Average pace can be predicted accurately given the right variables. While my project was unsuccessful in meeting my self-imposed benchmark (RMSE < 5), it serves as a proof-of-concept for building predictive models for distance running. The `tidymodels` framework is flexible enough that all steps in this project can be reused and improved upon in the future with the addition of more data. Most any runner has the ability to replicate these steps with their own data to create a similar model, providing additional information about their fitness that can help inform decisions during their training.  
